@@ -12,6 +12,7 @@ import os
 from threading import Lock
 from transcript_processor import TranscriptProcessor
 from email_service import send_email_smtp, send_email_sendgrid
+from crm_service import send_to_google_sheets, send_to_hubspot, send_to_airtable
 import time
 
 # Load environment variables
@@ -827,6 +828,83 @@ async def send_email_action(request: SendEmailRequest):
         )
     else:
         raise HTTPException(status_code=400, detail="Email not configured. Go to Settings to set up email.")
+
+    return {"status": "ok"}
+
+class CrmConnectionRequest(BaseModel):
+    provider: str  # "google_sheets", "hubspot", "airtable"
+    api_key: Optional[str] = None
+    spreadsheet_url: Optional[str] = None
+    base_id: Optional[str] = None
+    table_name: Optional[str] = None
+
+class CrmSendRequest(BaseModel):
+    provider: str
+    meeting_name: str
+    date: str
+    attendees: List[str]
+    summary: str
+    action_items: List[str]
+
+@app.get("/api/settings/crm")
+async def get_crm_connections():
+    connections = []
+    for provider in ["google_sheets", "hubspot", "airtable"]:
+        key = db.get_setting(f"crm_{provider}_api_key")
+        if key:
+            conn = {"provider": provider, "connected": True}
+            if provider == "google_sheets":
+                conn["spreadsheet_url"] = db.get_setting("crm_google_sheets_url") or ""
+            if provider == "airtable":
+                conn["base_id"] = db.get_setting("crm_airtable_base_id") or ""
+                conn["table_name"] = db.get_setting("crm_airtable_table_name") or ""
+            connections.append(conn)
+    return {"connections": connections}
+
+@app.post("/api/settings/crm")
+async def save_crm_connection(request: CrmConnectionRequest):
+    if request.api_key:
+        db.set_setting(f"crm_{request.provider}_api_key", request.api_key)
+    if request.spreadsheet_url:
+        db.set_setting("crm_google_sheets_url", request.spreadsheet_url)
+    if request.base_id:
+        db.set_setting("crm_airtable_base_id", request.base_id)
+    if request.table_name:
+        db.set_setting("crm_airtable_table_name", request.table_name)
+    return {"status": "ok"}
+
+@app.post("/api/actions/send-to-crm")
+async def send_to_crm_action(request: CrmSendRequest):
+    api_key = db.get_setting(f"crm_{request.provider}_api_key")
+    if not api_key:
+        raise HTTPException(status_code=400, detail=f"{request.provider} not configured. Go to Settings \u2192 CRM.")
+
+    if request.provider == "google_sheets":
+        spreadsheet_url = db.get_setting("crm_google_sheets_url") or ""
+        await send_to_google_sheets(
+            spreadsheet_url=spreadsheet_url, api_key=api_key,
+            meeting_name=request.meeting_name, date=request.date,
+            attendees=request.attendees, summary=request.summary,
+            action_items=request.action_items,
+        )
+    elif request.provider == "hubspot":
+        await send_to_hubspot(
+            api_key=api_key,
+            meeting_name=request.meeting_name, date=request.date,
+            attendees=request.attendees, summary=request.summary,
+            action_items=request.action_items,
+        )
+    elif request.provider == "airtable":
+        base_id = db.get_setting("crm_airtable_base_id") or ""
+        table_name = db.get_setting("crm_airtable_table_name") or ""
+        await send_to_airtable(
+            api_key=api_key, base_id=base_id, table_name=table_name,
+            meeting_name=request.meeting_name, date=request.date,
+            attendees=request.attendees, summary=request.summary,
+            action_items=request.action_items,
+        )
+    else:
+        raise HTTPException(status_code=400, detail=f"Unknown CRM provider: {request.provider}")
 
     return {"status": "ok"}
 

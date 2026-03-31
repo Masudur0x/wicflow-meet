@@ -9,3 +9,4 @@ python-multipart==0.0.20
 aiosqlite==0.21.0
 ollama==0.5.2
 aiosmtplib==3.0.2
+httpx==0.28.1

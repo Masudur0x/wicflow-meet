@@ -4,6 +4,7 @@ import React, { useState } from 'react'
 import { ClipboardCopy, FileDown, Mail, Database } from 'lucide-react'
 import { toast } from 'sonner'
 import { EmailModal } from './EmailModal'
+import { CrmDropdown } from './CrmDropdown'
 
 interface SummaryActionsBarProps {
   summaryText: string
@@ -60,10 +61,21 @@ export function SummaryActionsBar({ summaryText, meetingName, meetingDate }: Sum
         subject={`Meeting Summary: ${meetingName}`}
         body={summaryText}
       />
-      <button onClick={() => toast.info('CRM feature coming soon — configure in Settings')} className={buttonClass}>
-        <Database size={16} />
-        CRM
-      </button>
+      <div className="relative">
+        <button onClick={() => setCrmOpen(!crmOpen)} className={buttonClass}>
+          <Database size={16} />
+          CRM
+        </button>
+        <CrmDropdown
+          isOpen={crmOpen}
+          onClose={() => setCrmOpen(false)}
+          meetingName={meetingName}
+          meetingDate={meetingDate || new Date().toISOString().slice(0, 10)}
+          attendees={[]}
+          summary={summaryText}
+          actionItems={[]}
+        />
+      </div>
     </div>
   )
 }
