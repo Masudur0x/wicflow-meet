@@ -712,6 +712,52 @@ async def save_summarization_tier(request: dict):
         db.set_setting("license_key", request["license_key"])
     return {"status": "ok"}
 
+class SaveMdRequest(BaseModel):
+    content: str
+    filename: str
+
+@app.post("/api/actions/save-md")
+async def save_md(request: SaveMdRequest):
+    save_dir = db.get_setting("md_save_path") or os.path.expanduser("~/Documents/Wicflow Meet")
+
+    os.makedirs(save_dir, exist_ok=True)
+
+    # Sanitize filename
+    safe_filename = "".join(c for c in request.filename if c.isalnum() or c in '-_. ').strip()
+    if not safe_filename.endswith('.md'):
+        safe_filename += '.md'
+
+    filepath = os.path.join(save_dir, safe_filename)
+    with open(filepath, 'w', encoding='utf-8') as f:
+        f.write(request.content)
+
+    return {"status": "ok", "path": filepath}
+
+@app.get("/api/settings/auto-actions")
+async def get_auto_actions():
+    return {
+        "autoCopyClipboard": (db.get_setting("auto_copy_clipboard")) == "true",
+        "autoSaveMd": (db.get_setting("auto_save_md")) == "true",
+        "autoSendCrm": (db.get_setting("auto_send_crm")) == "true",
+        "autoSendEmail": (db.get_setting("auto_send_email")) == "true",
+        "mdSavePath": db.get_setting("md_save_path") or os.path.expanduser("~/Documents/Wicflow Meet"),
+    }
+
+@app.post("/api/settings/auto-actions")
+async def save_auto_actions(request: dict):
+    key_map = {
+        "autoCopyClipboard": "auto_copy_clipboard",
+        "autoSaveMd": "auto_save_md",
+        "autoSendCrm": "auto_send_crm",
+        "autoSendEmail": "auto_send_email",
+    }
+    for js_key, db_key in key_map.items():
+        if js_key in request:
+            db.set_setting(db_key, str(request[js_key]).lower())
+    if "mdSavePath" in request:
+        db.set_setting("md_save_path", request["mdSavePath"])
+    return {"status": "ok"}
+
 @app.on_event("shutdown")
 async def shutdown_event():
     """Cleanup on API shutdown"""

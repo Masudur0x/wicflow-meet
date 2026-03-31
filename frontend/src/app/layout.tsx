@@ -16,6 +16,7 @@ import { RecordingStateProvider } from '@/contexts/RecordingStateContext'
 import { OllamaDownloadProvider } from '@/contexts/OllamaDownloadContext'
 import { TranscriptProvider } from '@/contexts/TranscriptContext'
 import { ConfigProvider, useConfig } from '@/contexts/ConfigContext'
+import { SummaryActionsProvider } from '@/contexts/SummaryActionsContext'
 import { OnboardingProvider } from '@/contexts/OnboardingContext'
 import { OnboardingFlow } from '@/components/onboarding'
 import { loadBetaFeatures } from '@/types/betaFeatures'
@@ -236,6 +237,7 @@ export default function RootLayout({
           <RecordingStateProvider>
             <TranscriptProvider>
               <ConfigProvider>
+                <SummaryActionsProvider>
                 <OllamaDownloadProvider>
                   <OnboardingProvider>
                     <UpdateCheckProvider>
@@ -270,6 +272,7 @@ export default function RootLayout({
                   </OnboardingProvider>
 
                 </OllamaDownloadProvider>
+                </SummaryActionsProvider>
               </ConfigProvider>
             </TranscriptProvider>
           </RecordingStateProvider>

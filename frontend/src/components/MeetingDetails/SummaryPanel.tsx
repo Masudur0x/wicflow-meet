@@ -8,7 +8,8 @@ import { ModelConfig } from '@/components/ModelSettingsModal';
 import { SummaryGeneratorButtonGroup } from './SummaryGeneratorButtonGroup';
 import { SummaryUpdaterButtonGroup } from './SummaryUpdaterButtonGroup';
 import Analytics from '@/lib/analytics';
-import { RefObject } from 'react';
+import { RefObject, useMemo } from 'react';
+import { SummaryActionsBar } from '@/components/SummaryActions/SummaryActionsBar';
 
 interface SummaryPanelProps {
   meeting: {
@@ -86,6 +87,25 @@ export function SummaryPanel({
   onOpenModelSettings
 }: SummaryPanelProps) {
   const isSummaryLoading = summaryStatus === 'processing' || summaryStatus === 'summarizing' || summaryStatus === 'regenerating';
+
+  const summaryText = useMemo(() => {
+    if (!aiSummary) return '';
+    const lines: string[] = [];
+    for (const [key, section] of Object.entries(aiSummary)) {
+      if (key === '_section_order' || key === 'MeetingName' || key === 'MeetingNotes') continue;
+      if (typeof section === 'object' && section !== null && 'title' in section) {
+        const s = section as { title: string; blocks?: Array<{ content: string }> };
+        lines.push(`## ${s.title}`);
+        if (s.blocks) {
+          for (const block of s.blocks) {
+            lines.push(`- ${block.content}`);
+          }
+        }
+        lines.push('');
+      }
+    }
+    return lines.join('\n');
+  }, [aiSummary]);
 
   return (
     <div className="flex-1 min-w-0 flex flex-col bg-white overflow-hidden">
@@ -260,6 +280,11 @@ export function SummaryPanel({
                 title: meetingTitle,
                 created_at: meeting.created_at
               }}
+            />
+            <SummaryActionsBar
+              summaryText={summaryText}
+              meetingName={meetingTitle}
+              meetingDate={meeting.created_at}
             />
           </div>
           {summaryStatus !== 'idle' && (
