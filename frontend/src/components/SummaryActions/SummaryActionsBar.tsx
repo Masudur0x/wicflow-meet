@@ -3,6 +3,7 @@
 import React, { useState } from 'react'
 import { ClipboardCopy, FileDown, Mail, Database } from 'lucide-react'
 import { toast } from 'sonner'
+import { EmailModal } from './EmailModal'
 
 interface SummaryActionsBarProps {
   summaryText: string
@@ -49,10 +50,16 @@ export function SummaryActionsBar({ summaryText, meetingName, meetingDate }: Sum
         <FileDown size={16} />
         Save .md
       </button>
-      <button onClick={() => toast.info('Email feature coming soon — configure in Settings')} className={buttonClass}>
+      <button onClick={() => setEmailOpen(true)} className={buttonClass}>
         <Mail size={16} />
         Email
       </button>
+      <EmailModal
+        isOpen={emailOpen}
+        onClose={() => setEmailOpen(false)}
+        subject={`Meeting Summary: ${meetingName}`}
+        body={summaryText}
+      />
       <button onClick={() => toast.info('CRM feature coming soon — configure in Settings')} className={buttonClass}>
         <Database size={16} />
         CRM

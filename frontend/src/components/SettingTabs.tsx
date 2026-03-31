@@ -4,6 +4,7 @@ import { TranscriptModelProps, TranscriptSettings } from "./TranscriptSettings"
 import { RecordingSettings, RecordingPreferences } from "./RecordingSettings"
 import { About } from "./About";
 import { SummarizationTierSettings } from "@/components/settings/SummarizationTierSettings"
+import { EmailSettings } from "@/components/settings/EmailSettings"
 
 interface SettingTabsProps {
     modelConfig: ModelConfig;
@@ -37,6 +38,7 @@ export function SettingTabs({
     <TabsTrigger value="transcriptSettings">Transcript</TabsTrigger>
     <TabsTrigger value="modelSettings">Ai Summary</TabsTrigger>
     <TabsTrigger value="recordingSettings">Preferences</TabsTrigger>
+    <TabsTrigger value="emailSettings">Email</TabsTrigger>
     <TabsTrigger value="about">About</TabsTrigger>
   </TabsList>
   <TabsContent value="modelSettings">
@@ -58,6 +60,9 @@ export function SettingTabs({
   </TabsContent>
   <TabsContent value="recordingSettings">
     <RecordingSettings />
+  </TabsContent>
+  <TabsContent value="emailSettings">
+    <EmailSettings />
   </TabsContent>
   <TabsContent value="about">
     <About />

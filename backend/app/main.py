@@ -11,6 +11,7 @@ import json
 import os
 from threading import Lock
 from transcript_processor import TranscriptProcessor
+from email_service import send_email_smtp, send_email_sendgrid
 import time
 
 # Load environment variables
@@ -756,6 +757,77 @@ async def save_auto_actions(request: dict):
             db.set_setting(db_key, str(request[js_key]).lower())
     if "mdSavePath" in request:
         db.set_setting("md_save_path", request["mdSavePath"])
+    return {"status": "ok"}
+
+class EmailConfigRequest(BaseModel):
+    method: str  # "smtp" or "sendgrid"
+    smtp_host: Optional[str] = None
+    smtp_port: Optional[int] = None
+    smtp_username: Optional[str] = None
+    smtp_password: Optional[str] = None
+    sendgrid_api_key: Optional[str] = None
+    from_email: Optional[str] = None
+
+class SendEmailRequest(BaseModel):
+    to_emails: List[str]
+    subject: str
+    body_html: str
+
+@app.get("/api/settings/email")
+async def get_email_config():
+    return {
+        "method": db.get_setting("email_method") or "",
+        "smtp_host": db.get_setting("email_smtp_host") or "",
+        "smtp_port": int(db.get_setting("email_smtp_port") or "587"),
+        "smtp_username": db.get_setting("email_smtp_username") or "",
+        "smtp_password": db.get_setting("email_smtp_password") or "",
+        "sendgrid_api_key": db.get_setting("email_sendgrid_api_key") or "",
+        "from_email": db.get_setting("email_from") or "",
+    }
+
+@app.post("/api/settings/email")
+async def save_email_config(request: EmailConfigRequest):
+    db.set_setting("email_method", request.method)
+    if request.smtp_host is not None:
+        db.set_setting("email_smtp_host", request.smtp_host)
+    if request.smtp_port is not None:
+        db.set_setting("email_smtp_port", str(request.smtp_port))
+    if request.smtp_username is not None:
+        db.set_setting("email_smtp_username", request.smtp_username)
+    if request.smtp_password is not None:
+        db.set_setting("email_smtp_password", request.smtp_password)
+    if request.sendgrid_api_key is not None:
+        db.set_setting("email_sendgrid_api_key", request.sendgrid_api_key)
+    if request.from_email is not None:
+        db.set_setting("email_from", request.from_email)
+    return {"status": "ok"}
+
+@app.post("/api/actions/send-email")
+async def send_email_action(request: SendEmailRequest):
+    method = db.get_setting("email_method")
+
+    if method == "smtp":
+        await send_email_smtp(
+            to_emails=request.to_emails,
+            subject=request.subject,
+            body_html=request.body_html,
+            smtp_host=db.get_setting("email_smtp_host") or "",
+            smtp_port=int(db.get_setting("email_smtp_port") or "587"),
+            smtp_username=db.get_setting("email_smtp_username") or "",
+            smtp_password=db.get_setting("email_smtp_password") or "",
+            from_email=db.get_setting("email_from"),
+        )
+    elif method == "sendgrid":
+        await send_email_sendgrid(
+            to_emails=request.to_emails,
+            subject=request.subject,
+            body_html=request.body_html,
+            api_key=db.get_setting("email_sendgrid_api_key") or "",
+            from_email=db.get_setting("email_from") or "",
+        )
+    else:
+        raise HTTPException(status_code=400, detail="Email not configured. Go to Settings to set up email.")
+
     return {"status": "ok"}
 
 @app.on_event("shutdown")
