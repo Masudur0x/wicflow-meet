@@ -35,9 +35,9 @@ if not logger.handlers:
     logger.addHandler(console_handler)
 
 app = FastAPI(
-    title="Meeting Summarizer API",
+    title="Wicflow Meet API",
     description="API for processing and summarizing meeting transcripts",
-    version="1.0.0"
+    version="0.1.0"
 )
 
 # Configure CORS
