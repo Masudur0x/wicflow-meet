@@ -12,8 +12,10 @@ interface HomebrewDatabaseDetectorProps {
 
 // Homebrew paths differ between Intel and Apple Silicon Macs
 const HOMEBREW_PATHS = [
-  '/opt/homebrew/var/meetily/meeting_minutes.db',  // Apple Silicon (M1/M2/M3)
-  '/usr/local/var/meetily/meeting_minutes.db',      // Intel Macs
+  '/opt/homebrew/var/wicflow-meet/meeting_minutes.db',  // Apple Silicon (M1/M2/M3)
+  '/usr/local/var/wicflow-meet/meeting_minutes.db',      // Intel Macs
+  '/opt/homebrew/var/meetily/meeting_minutes.db',         // Legacy Meetily (Apple Silicon)
+  '/usr/local/var/meetily/meeting_minutes.db',            // Legacy Meetily (Intel)
 ];
 
 export function HomebrewDatabaseDetector({ onImportSuccess, onDecline }: HomebrewDatabaseDetectorProps) {

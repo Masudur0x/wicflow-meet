@@ -1,10 +1,10 @@
-# Meetily Privacy Policy
+# Wicflow Meet Privacy Policy
 
-*Last updated: [Current Date]*
+*Last updated: April 2026*
 
 ## Our Privacy-First Commitment
 
-Meetily is built on the principle that your meeting data should remain private and under your control. This privacy policy explains how we handle data in our open-source meeting assistant.
+Wicflow Meet is built on the principle that your meeting data should remain private and under your control. This privacy policy explains how we handle data in our open-source meeting assistant.
 
 ## Data Processing Philosophy
 
@@ -23,7 +23,7 @@ Meetily is built on the principle that your meeting data should remain private a
 ## Usage Analytics
 
 ### What We Collect
-To improve Meetily and ensure optimal performance, we collect minimal, anonymized usage data:
+To improve Wicflow Meet and ensure optimal performance, we collect minimal, anonymized usage data:
 
 **Application Usage:**
 - Feature usage patterns (which tools you use most)
@@ -38,12 +38,12 @@ To improve Meetily and ensure optimal performance, we collect minimal, anonymize
 
 ### What We DON'T Collect
 We never collect:
-- ❌ Meeting content, transcripts, or recordings
-- ❌ Personal information or identifiable data
-- ❌ File names, meeting titles, or metadata
-- ❌ Audio data or voice patterns
-- ❌ Participant names or contact information
-- ❌ LLM conversations or AI-generated content
+- Meeting content, transcripts, or recordings
+- Personal information or identifiable data
+- File names, meeting titles, or metadata
+- Audio data or voice patterns
+- Participant names or contact information
+- LLM conversations or AI-generated content
 
 ### Why We Collect This Data
 This analytics collection is necessary for:
@@ -51,14 +51,12 @@ This analytics collection is necessary for:
 - **Performance Optimization**: Understanding resource usage and system bottlenecks
 - **Security**: Detecting potential security issues and vulnerabilities
 - **Feature Development**: Making data-driven decisions about new features
-- **Open Source Sustainability**: Ensuring the project meets user needs effectively
 
 ### Analytics Implementation
 - **Provider**: PostHog (privacy-focused analytics platform)
 - **Anonymization**: All data linked to generated user IDs only - no personal identification
 - **Data retention**: 12 months maximum, then automatically deleted
 - **Encryption**: All data encrypted in transit using industry-standard protocols
-- **Location**: Data processed in accordance with PostHog's privacy policy
 - **Access Control**: Strictly limited to core development team members
 
 ## Third-Party Services
@@ -80,7 +78,6 @@ If you choose to use external LLM providers:
 - **Access**: View all data stored locally on your device
 - **Export**: Export your data in standard formats
 - **Delete**: Remove all data from your device
-
 
 ### Analytics Transparency
 - **Open source**: Full analytics implementation available for review in our source code
@@ -108,9 +105,7 @@ We will notify users of any material changes to this privacy policy through:
 ## Contact Us
 
 For privacy-related questions or concerns:
-- **GitHub Issues**: [Create an issue](https://github.com/Zackriya-Solutions/meeting-minutes/issues)
-- **Email**: [Contact form](https://www.zackriya.com/service-interest-form/)
-- **Community**: [Discord](https://discord.gg/crRymMQBFH)
+- **GitHub Issues**: [Create an issue](https://github.com/Masudur0x/wicflow-meet/issues)
 
 ## Open Source Commitment
 
@@ -122,4 +117,4 @@ As an open-source project under MIT license, you can:
 
 ---
 
-*This privacy policy applies to Meetily v0.0.5 and later versions. For enterprise deployments, additional privacy controls may be available.*
+*This privacy policy applies to Wicflow Meet v0.3.0 and later versions.*

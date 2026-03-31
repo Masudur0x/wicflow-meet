@@ -1,36 +1,35 @@
-# Contributing to Meeting Minutes Updates
+# Contributing to Wicflow Meet
 
-Thank you for your interest in contributing to Meetily! This document provides guidelines and instructions for contributing to this project.
+Thank you for your interest in contributing to Wicflow Meet! This document provides guidelines and instructions for contributing to this project.
 
 ## Development Workflow
 
 ### Branch Strategy
 
 - `main` - Production branch
-- `devtest` - Development and testing branch
-- Feature branches should be created from `devtest`
+- Feature branches should be created from `main`
 
 ### Getting Started
 
 1. Fork the repository
 2. Clone your fork:
    ```bash
-   git clone https://github.com/YOUR_USERNAME/meeting-minutes.git
+   git clone https://github.com/YOUR_USERNAME/wicflow-meet.git
    ```
 3. Add the original repository as upstream:
    ```bash
-   git remote add upstream https://github.com/Zackriya-Solutions/meeting-minutes.git
+   git remote add upstream https://github.com/Masudur0x/wicflow-meet.git
    ```
-4. Create a new branch from `devtest`:
+4. Create a new branch:
    ```bash
-   git checkout devtest
-   git pull upstream devtest
+   git checkout main
+   git pull upstream main
    git checkout -b feature/your-feature-name
    ```
 
 ### Development Process
 
-1. Always start your work from the `devtest` branch
+1. Always start your work from the `main` branch
 2. Create a new branch for each feature/fix
 3. Make your changes
 4. Write or update tests as needed
@@ -52,13 +51,13 @@ Before starting work on a new feature or bug fix:
 
 ### Pull Request Process
 
-1. Create a PR from your feature branch to `devtest`
+1. Create a PR from your feature branch to `main`
 2. Link the PR to the related issue using the issue number (e.g., "Fixes #123")
 3. Fill out the PR template completely
 4. Ensure CI checks pass
 5. Request review from at least one maintainer
 6. Address any review comments
-7. Once approved, the PR will be merged into `devtest`
+7. Once approved, the PR will be merged
 
 ### PR Template
 
@@ -120,33 +119,11 @@ Types:
 - test: Adding/updating tests
 - chore: Maintenance tasks
 
-## Testing
-
-- Write unit tests for new features
-- Update existing tests when modifying code
-- Ensure all tests pass before submitting PR
-- Include integration tests for complex features
-
-## Documentation
-
-- Update documentation for new features
-- Keep README up to date
-- Document API changes
-- Add comments for complex code
-
-## Review Process
-
-1. PRs require at least one review
-2. Address all review comments
-3. Keep the PR up to date with `devtest`
-4. Squash commits if requested
-
 ## Getting Help
 
 - Create an issue for questions
-- Join our community chat
 - Contact maintainers
 
 ## License
 
-By contributing, you agree that your contributions will be licensed under the project's MIT License. 
+By contributing, you agree that your contributions will be licensed under the project's MIT License.
