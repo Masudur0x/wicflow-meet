@@ -57,9 +57,9 @@ jobs:
         with:
           name: macos-build
           path: |
-            frontend/src-tauri/target/release/bundle/dmg/*.dmg
-            frontend/src-tauri/target/release/bundle/macos/*.app.tar.gz
-            frontend/src-tauri/target/release/bundle/macos/*.app.tar.gz.sig
+            target/release/bundle/dmg/*.dmg
+            target/release/bundle/macos/*.app.tar.gz
+            target/release/bundle/macos/*.app.tar.gz.sig
 
   build-windows:
     runs-on: windows-latest
@@ -115,8 +115,10 @@ jobs:
         with:
           name: windows-build
           path: |
-            frontend/src-tauri/target/release/bundle/nsis/*.exe
-            frontend/src-tauri/target/release/bundle/msi/*.msi
+            target/release/bundle/nsis/*.exe
+            target/release/bundle/nsis/*.exe.sig
+            target/release/bundle/msi/*.msi
+            target/release/bundle/msi/*.msi.sig
 
   release:
     needs: [build-macos, build-windows]
