@@ -39,6 +39,12 @@ jobs:
       - name: Install CMake
         run: brew install cmake
 
+      - name: Build llama-helper sidecar
+        run: |
+          cargo build --release -p llama-helper --features metal
+          mkdir -p frontend/src-tauri/binaries
+          cp target/release/llama-helper frontend/src-tauri/binaries/llama-helper-aarch64-apple-darwin
+
       - name: Build Tauri app (macOS Metal)
         working-directory: frontend
         run: pnpm tauri:build:metal
@@ -82,6 +88,13 @@ jobs:
       - name: Install backend dependencies
         working-directory: backend
         run: pip install -r requirements.txt
+
+      - name: Build llama-helper sidecar
+        shell: pwsh
+        run: |
+          cargo build --release -p llama-helper
+          New-Item -ItemType Directory -Force -Path "frontend/src-tauri/binaries" | Out-Null
+          Copy-Item "target/release/llama-helper.exe" -Destination "frontend/src-tauri/binaries/llama-helper-x86_64-pc-windows-msvc.exe"
 
       - name: Build Tauri app (Windows Vulkan)
         working-directory: frontend
