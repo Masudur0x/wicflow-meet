@@ -156,6 +156,32 @@ class DatabaseManager:
                 )
             """)
 
+            # Create app_settings table for Wicflow-specific settings
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS app_settings (
+                    key TEXT PRIMARY KEY,
+                    value TEXT NOT NULL
+                )
+            """)
+
+            conn.commit()
+
+    def get_setting(self, key: str) -> Optional[str]:
+        """Get a setting value by key from app_settings table."""
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT value FROM app_settings WHERE key = ?", (key,))
+            result = cursor.fetchone()
+            return result[0] if result else None
+
+    def set_setting(self, key: str, value: str):
+        """Set a setting value in app_settings table."""
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                "INSERT OR REPLACE INTO app_settings (key, value) VALUES (?, ?)",
+                (key, value)
+            )
             conn.commit()
 
     @asynccontextmanager

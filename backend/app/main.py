@@ -8,6 +8,7 @@ import logging
 from dotenv import load_dotenv
 from db import DatabaseManager
 import json
+import os
 from threading import Lock
 from transcript_processor import TranscriptProcessor
 import time
@@ -629,6 +630,87 @@ async def search_transcripts(request: SearchRequest):
     except Exception as e:
         logger.error(f"Error searching transcripts: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+
+class SummarizeTierRequest(BaseModel):
+    transcript: str
+    tier: str  # "free", "premium", "byo"
+    byo_provider: Optional[str] = None
+    byo_api_key: Optional[str] = None
+    custom_prompt: Optional[str] = None
+
+@app.post("/api/summarize-tiered")
+async def summarize_tiered(request: SummarizeTierRequest):
+    transcript_processor = TranscriptProcessor()
+    custom_prompt = request.custom_prompt or "Generate a summary of the meeting transcript."
+
+    if request.tier == "free":
+        num_chunks, all_json_data = await transcript_processor.process_transcript(
+            text=request.transcript,
+            model="ollama",
+            model_name="llama3.2:latest",
+            custom_prompt=custom_prompt
+        )
+    elif request.tier == "premium":
+        wicflow_api_key = os.getenv("WICFLOW_ANTHROPIC_API_KEY", "")
+        if not wicflow_api_key:
+            raise HTTPException(status_code=503, detail="Premium summarization is not configured")
+        # Temporarily save the Wicflow API key so the processor can use it
+        await db.save_api_key(wicflow_api_key, "claude")
+        try:
+            num_chunks, all_json_data = await transcript_processor.process_transcript(
+                text=request.transcript,
+                model="claude",
+                model_name="claude-sonnet-4-20250514",
+                custom_prompt=custom_prompt
+            )
+        finally:
+            # Clean up the temporarily saved key
+            await db.delete_api_key("claude")
+    elif request.tier == "byo":
+        if not request.byo_api_key or not request.byo_provider:
+            raise HTTPException(status_code=400, detail="BYO tier requires provider and api_key")
+        model_name = "claude-sonnet-4-20250514" if request.byo_provider == "claude" else "gpt-4o"
+        provider = request.byo_provider
+        # Temporarily save the BYO API key so the processor can use it
+        await db.save_api_key(request.byo_api_key, provider)
+        try:
+            num_chunks, all_json_data = await transcript_processor.process_transcript(
+                text=request.transcript,
+                model=provider,
+                model_name=model_name,
+                custom_prompt=custom_prompt
+            )
+        finally:
+            await db.delete_api_key(provider)
+    else:
+        raise HTTPException(status_code=400, detail=f"Unknown tier: {request.tier}")
+
+    return {"num_chunks": num_chunks, "data": all_json_data}
+
+@app.get("/api/settings/summarization-tier")
+async def get_summarization_tier():
+    tier = db.get_setting("summarization_tier") or "free"
+    byo_provider = db.get_setting("byo_provider") or "claude"
+    byo_api_key = db.get_setting("byo_api_key") or ""
+    license_key = db.get_setting("license_key") or ""
+    return {
+        "tier": tier,
+        "byo_provider": byo_provider,
+        "byo_api_key": byo_api_key,
+        "license_key": license_key
+    }
+
+@app.post("/api/settings/summarization-tier")
+async def save_summarization_tier(request: dict):
+    if "tier" in request:
+        db.set_setting("summarization_tier", request["tier"])
+    if "byo_provider" in request:
+        db.set_setting("byo_provider", request["byo_provider"])
+    if "byo_api_key" in request:
+        db.set_setting("byo_api_key", request["byo_api_key"])
+    if "license_key" in request:
+        db.set_setting("license_key", request["license_key"])
+    return {"status": "ok"}
 
 @app.on_event("shutdown")
 async def shutdown_event():

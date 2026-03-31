@@ -3,6 +3,7 @@ import { ModelConfig, ModelSettingsModal } from "./ModelSettingsModal"
 import { TranscriptModelProps, TranscriptSettings } from "./TranscriptSettings"
 import { RecordingSettings, RecordingPreferences } from "./RecordingSettings"
 import { About } from "./About";
+import { SummarizationTierSettings } from "@/components/settings/SummarizationTierSettings"
 
 interface SettingTabsProps {
     modelConfig: ModelConfig;
@@ -39,12 +40,14 @@ export function SettingTabs({
     <TabsTrigger value="about">About</TabsTrigger>
   </TabsList>
   <TabsContent value="modelSettings">
-    <ModelSettingsModal
-
-modelConfig={modelConfig}
-setModelConfig={setModelConfig}
-onSave={onSave}
-/>
+    <SummarizationTierSettings />
+    <div className="mt-6 pt-6 border-t border-[hsl(var(--border))]">
+      <ModelSettingsModal
+        modelConfig={modelConfig}
+        setModelConfig={setModelConfig}
+        onSave={onSave}
+      />
+    </div>
   </TabsContent>
 <TabsContent value="transcriptSettings">
     <TranscriptSettings
