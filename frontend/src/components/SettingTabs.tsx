@@ -6,6 +6,7 @@ import { About } from "./About";
 import { SummarizationTierSettings } from "@/components/settings/SummarizationTierSettings"
 import { EmailSettings } from "@/components/settings/EmailSettings"
 import { CrmSettings } from "@/components/settings/CrmSettings"
+import { AutoActionsSettings } from "@/components/settings/AutoActionsSettings"
 
 interface SettingTabsProps {
     modelConfig: ModelConfig;
@@ -41,6 +42,7 @@ export function SettingTabs({
     <TabsTrigger value="recordingSettings">Preferences</TabsTrigger>
     <TabsTrigger value="emailSettings">Email</TabsTrigger>
     <TabsTrigger value="crmSettings">CRM</TabsTrigger>
+    <TabsTrigger value="autoActions">Auto-Actions</TabsTrigger>
     <TabsTrigger value="about">About</TabsTrigger>
   </TabsList>
   <TabsContent value="modelSettings">
@@ -68,6 +70,9 @@ export function SettingTabs({
   </TabsContent>
   <TabsContent value="crmSettings">
     <CrmSettings />
+  </TabsContent>
+  <TabsContent value="autoActions">
+    <AutoActionsSettings />
   </TabsContent>
   <TabsContent value="about">
     <About />
