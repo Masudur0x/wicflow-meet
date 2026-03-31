@@ -7,7 +7,7 @@ import { PermissionRow } from '../shared';
 import { useOnboarding } from '@/contexts/OnboardingContext';
 
 export function PermissionsStep() {
-  const { setPermissionStatus, setPermissionsSkipped, permissions, completeOnboarding } = useOnboarding();
+  const { setPermissionStatus, setPermissionsSkipped, permissions, goNext } = useOnboarding();
   const [isPending, setIsPending] = useState(false);
 
   // Check permissions - only logs current state, doesn't auto-authorize
@@ -64,7 +64,7 @@ export function PermissionsStep() {
       try {
         await invoke('open_system_settings');
       } catch {
-        alert('Please enable Audio Capture in System Settings → Privacy & Security → Audio Capture');
+        alert('Please enable Audio Capture in System Settings -> Privacy & Security -> Audio Capture');
       }
       return;
     }
@@ -93,18 +93,14 @@ export function PermissionsStep() {
     }
   };
 
-  const handleFinish = async () => {
-    try {
-      await completeOnboarding();
-      window.location.reload();
-    } catch (error) {
-      console.error('Failed to complete onboarding:', error);
-    }
+  const handleContinue = () => {
+    // Go to the Complete step
+    goNext();
   };
 
-  const handleSkip = async () => {
+  const handleSkip = () => {
     setPermissionsSkipped(true);
-    await handleFinish();
+    goNext();
   };
 
   const allPermissionsGranted =
@@ -115,8 +111,8 @@ export function PermissionsStep() {
     <OnboardingContainer
       title="Grant Permissions"
       description="Wicflow Meet needs access to your microphone and system audio to record meetings"
-      step={4}
-      hideProgress={true}
+      step={5}
+      totalSteps={6}
       showNavigation={allPermissionsGranted}
       canGoNext={allPermissionsGranted}
     >
@@ -146,19 +142,23 @@ export function PermissionsStep() {
 
         {/* Action Buttons */}
         <div className="flex flex-col gap-3 pt-4">
-          <Button onClick={handleFinish} disabled={!allPermissionsGranted} className="w-full h-11">
-            Finish Setup
+          <Button
+            onClick={handleContinue}
+            disabled={!allPermissionsGranted}
+            className="w-full h-11 rounded-full bg-[hsl(var(--primary))] hover:bg-[hsl(var(--accent-dark))] text-white shadow-[0_0_20px_hsl(var(--accent-glow))] disabled:opacity-50 disabled:shadow-none"
+          >
+            Continue
           </Button>
 
           <button
             onClick={handleSkip}
-            className="text-sm text-neutral-500 hover:text-neutral-700 transition-colors"
+            className="text-sm text-[hsl(var(--text-muted))] hover:text-[hsl(var(--text-secondary))] transition-colors"
           >
             I'll do this later
           </button>
 
           {!allPermissionsGranted && (
-            <p className="text-xs text-center text-muted-foreground">
+            <p className="text-xs text-center text-[hsl(var(--text-muted))]">
               Recording won't work without permissions. You can grant them later in settings.
             </p>
           )}

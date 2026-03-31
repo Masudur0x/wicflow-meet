@@ -2,9 +2,11 @@ import React, { useEffect } from 'react';
 import { useOnboarding } from '@/contexts/OnboardingContext';
 import {
   WelcomeStep,
-  PermissionsStep,
-  DownloadProgressStep,
   SetupOverviewStep,
+  DownloadProgressStep,
+  AISummarizerStep,
+  PermissionsStep,
+  CompleteStep,
 } from './steps';
 
 interface OnboardingFlowProps {
@@ -19,30 +21,43 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
     // Check if running on macOS
     const checkPlatform = async () => {
       try {
-        // Dynamic import to avoid SSR issues if any
         const { platform } = await import('@tauri-apps/plugin-os');
         setIsMac(platform() === 'macos');
       } catch (e) {
         console.error('Failed to detect platform:', e);
-        // Fallback
         setIsMac(navigator.userAgent.includes('Mac'));
       }
     };
     checkPlatform();
   }, []);
 
-  // 4-Step Onboarding Flow (System-Recommended Models):
-  // Step 1: Welcome - Introduce Wicflow Meet features
-  // Step 2: Setup Overview - Database initialization + show recommended downloads
-  // Step 3: Download Progress - Download Parakeet + Gemma (auto-selected based on RAM)
-  // Step 4: Permissions - Request mic + system audio (macOS only)
+  // macOS flow (6 steps):
+  //   1: Welcome, 2: SetupOverview, 3: Download, 4: AI Summarizer, 5: Permissions, 6: Complete
+  // Non-macOS flow (5 steps):
+  //   1: Welcome, 2: SetupOverview, 3: Download, 4: AI Summarizer, 5: Complete
+
+  const renderStep = () => {
+    switch (currentStep) {
+      case 1:
+        return <WelcomeStep />;
+      case 2:
+        return <SetupOverviewStep />;
+      case 3:
+        return <DownloadProgressStep />;
+      case 4:
+        return <AISummarizerStep />;
+      case 5:
+        return isMac ? <PermissionsStep /> : <CompleteStep />;
+      case 6:
+        return isMac ? <CompleteStep /> : null;
+      default:
+        return null;
+    }
+  };
 
   return (
     <div className="onboarding-flow">
-      {currentStep === 1 && <WelcomeStep />}
-      {currentStep === 2 && <SetupOverviewStep />}
-      {currentStep === 3 && <DownloadProgressStep />}
-      {currentStep === 4 && isMac && <PermissionsStep />}
+      {renderStep()}
     </div>
   );
 }

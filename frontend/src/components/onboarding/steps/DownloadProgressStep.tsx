@@ -31,7 +31,6 @@ export function DownloadProgressStep() {
     summaryModelDownloaded,
     setSummaryModelDownloaded,
     startBackgroundDownloads,
-    completeOnboarding,
   } = useOnboarding();
 
   const [recommendedModel, setRecommendedModel] = useState<string>('gemma3:1b');
@@ -53,7 +52,6 @@ export function DownloadProgressStep() {
     speedMbps: 0,
   });
 
-  const [isCompleting, setIsCompleting] = useState(false);
   const downloadStartedRef = useRef(false);
   const retryingRef = useRef(false);
   const retryingSummaryRef = useRef(false);
@@ -329,27 +327,8 @@ export function DownloadProgressStep() {
       });
     }
 
-    if (isMac) {
-      // macOS: Go to Permissions step (will complete after permissions granted)
-      goNext();
-    } else {
-      // Non-macOS: Complete onboarding immediately (downloads continue in background)
-      setIsCompleting(true);
-      try {
-        await completeOnboarding();
-
-        // Small delay to ensure state is saved before reload
-        await new Promise(resolve => setTimeout(resolve, 100));
-
-        window.location.reload();
-      } catch (error) {
-        console.error('Failed to complete onboarding:', error);
-        toast.error('Failed to complete setup', {
-          description: 'Please try again.',
-        });
-        setIsCompleting(false);
-      }
-    }
+    // Go to AI Summarizer step (step 4)
+    goNext();
   };
 
   const renderDownloadCard = (
@@ -358,31 +337,31 @@ export function DownloadProgressStep() {
     state: DownloadState,
     modelSize: string
   ) => (
-    <div className="bg-white rounded-xl border border-gray-200 p-5">
+    <div className="bg-[hsl(var(--card))] rounded-xl border border-[hsl(var(--border))] p-5">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-full bg-[hsl(var(--primary)_/_0.15)] flex items-center justify-center">
             {icon}
           </div>
           <div>
-            <h3 className="font-medium text-gray-900">{title}</h3>
-            <p className="text-sm text-gray-500">{modelSize}</p>
+            <h3 className="font-medium text-[hsl(var(--text-primary))]">{title}</h3>
+            <p className="text-sm text-[hsl(var(--text-muted))]">{modelSize}</p>
           </div>
         </div>
         <div>
           {state.status === 'waiting' && (
-            <span className="text-sm text-gray-500">Waiting...</span>
+            <span className="text-sm text-[hsl(var(--text-muted))]">Waiting...</span>
           )}
           {state.status === 'downloading' && (
-            <Loader2 className="w-5 h-5 text-gray-700 animate-spin" />
+            <Loader2 className="w-5 h-5 text-[hsl(var(--accent-light))] animate-spin" />
           )}
           {state.status === 'completed' && (
-            <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center">
-              <Check className="w-4 h-4 text-green-600" />
+            <div className="w-6 h-6 rounded-full bg-green-900/30 flex items-center justify-center">
+              <Check className="w-4 h-4 text-green-400" />
             </div>
           )}
           {state.status === 'error' && (
-            <span className="text-sm text-red-500">Failed</span>
+            <span className="text-sm text-red-400">Failed</span>
           )}
         </div>
       </div>
@@ -390,23 +369,23 @@ export function DownloadProgressStep() {
       {/* Progress Bar */}
       {(state.status === 'downloading' || state.status === 'completed') && (
         <div className="space-y-2">
-          <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+          <div className="w-full h-2 bg-[hsl(var(--border-medium))] rounded-full overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-gray-700 to-gray-900 rounded-full transition-all duration-300"
+              className="h-full bg-gradient-to-r from-[hsl(var(--primary))] to-[hsl(var(--accent-light))] rounded-full transition-all duration-300"
               style={{ width: `${state.progress}%` }}
             />
           </div>
           <div className="flex items-center justify-between text-sm">
-            <span className="text-gray-600">
+            <span className="text-[hsl(var(--text-muted))]">
               {state.downloadedMb.toFixed(1)} MB / {state.totalMb.toFixed(1)} MB
             </span>
             <div className="flex items-center gap-2">
               {state.speedMbps > 0 && (
-                <span className="text-gray-500">
+                <span className="text-[hsl(var(--text-muted))]">
                   {state.speedMbps.toFixed(1)} MB/s
                 </span>
               )}
-              <span className="font-semibold text-gray-900">
+              <span className="font-semibold text-[hsl(var(--text-primary))]">
                 {Math.round(state.progress)}%
               </span>
             </div>
@@ -415,13 +394,13 @@ export function DownloadProgressStep() {
       )}
 
       {state.status === 'error' && state.error && (
-        <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded-md">
-          <p className="text-sm text-red-600 font-medium">Download Error</p>
+        <div className="mt-2 p-3 bg-red-900/20 border border-red-800/30 rounded-md">
+          <p className="text-sm text-red-400 font-medium">Download Error</p>
           <p className="text-xs text-red-500 mt-1">{state.error}</p>
           {(title === 'Transcription Engine' || title === 'Summary Engine') && (
             <button
               onClick={title === 'Transcription Engine' ? handleRetryDownload : handleRetrySummaryDownload}
-              className="mt-3 w-full h-9 px-4 bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium rounded-md transition-colors flex items-center justify-center gap-2"
+              className="mt-3 w-full h-9 px-4 bg-[hsl(var(--primary))] hover:bg-[hsl(var(--accent-dark))] text-white text-sm font-medium rounded-md transition-colors flex items-center justify-center gap-2"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -438,23 +417,23 @@ export function DownloadProgressStep() {
   return (
     <OnboardingContainer
       title="Getting things ready"
-      description="You can start using Wicflow Meet after downloading the Transcription Engine."
+      description="This runs on your computer — your audio never leaves your machine."
       step={3}
-      totalSteps={isMac ? 4 : 3}
+      totalSteps={isMac ? 6 : 5}
     >
       <div className="flex flex-col items-center space-y-6">
         {/* Download Cards */}
         <div className="w-full max-w-lg space-y-4">
           {renderDownloadCard(
             'Transcription Engine',
-            <Mic className="w-5 h-5 text-gray-600" />,
+            <Mic className="w-5 h-5 text-[hsl(var(--accent-light))]" />,
             parakeetState,
             '~670 MB'
           )}
 
           {renderDownloadCard(
             'Summary Engine',
-            <Sparkles className="w-5 h-5 text-gray-600" />,
+            <Sparkles className="w-5 h-5 text-[hsl(var(--accent-light))]" />,
             gemmaState,
             recommendedModel === 'gemma3:4b' ? '~2.5 GB' : '~806 MB'
           )}
@@ -468,13 +447,13 @@ export function DownloadProgressStep() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.3, ease: 'easeOut' }}
-              className="w-full max-w-lg bg-gray-100 rounded-lg p-4 text-sm text-gray-800"
+              className="w-full max-w-lg bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-lg p-4 text-sm text-[hsl(var(--text-secondary))]"
             >
               <div className="flex items-start gap-3">
-                <Download className="w-5 h-5 text-gray-600 flex-shrink-0 mt-0.5" />
+                <Download className="w-5 h-5 text-[hsl(var(--accent-light))] flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-medium">You can continue while this finishes</p>
-                  <p className="text-gray-700 mt-1">
+                  <p className="font-medium text-[hsl(var(--text-primary))]">You can continue while this finishes</p>
+                  <p className="text-[hsl(var(--text-muted))] mt-1">
                     Download will continue in the background.
                   </p>
                 </div>
@@ -487,10 +466,10 @@ export function DownloadProgressStep() {
         <div className="w-full max-w-xs">
           <Button
             onClick={handleContinue}
-            disabled={!parakeetDownloaded || isCompleting}
-            className="w-full h-11 bg-gray-900 hover:bg-gray-800 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={!parakeetDownloaded}
+            className="w-full h-11 rounded-full bg-[hsl(var(--primary))] hover:bg-[hsl(var(--accent-dark))] text-white shadow-[0_0_20px_hsl(var(--accent-glow))] disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
           >
-            {(isCompleting || !parakeetDownloaded) ? (
+            {!parakeetDownloaded ? (
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
             ) : (
               'Continue'
