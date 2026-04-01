@@ -123,7 +123,7 @@ export function TranscriptPanel({
                   Ready to record your first meeting
                 </h3>
                 <p className="text-sm text-gray-500 mb-6 max-w-xs">
-                  Click the microphone button below to start recording
+                  Click the microphone button below to start recording. Wicflow Meet captures both your voice and other participants' audio, then transcribes everything automatically.
                 </p>
                 <svg className="w-6 h-6 text-gray-300 animate-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />

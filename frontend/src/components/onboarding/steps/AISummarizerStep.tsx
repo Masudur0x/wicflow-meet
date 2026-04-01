@@ -27,8 +27,8 @@ export function AISummarizerStep() {
     },
     {
       id: 'byo',
-      title: 'Connect ChatGPT or Claude',
-      description: 'Use your own API key for higher quality summaries.',
+      title: 'Use Your Own API Key',
+      description: 'Connect an OpenAI or Anthropic API key for higher quality notes. Requires a developer account.',
       icon: <Key className="w-6 h-6" />,
     },
   ];
@@ -53,15 +53,10 @@ export function AISummarizerStep() {
     goNext();
   };
 
-  const handleSkip = () => {
-    setSelectedTier('free');
-    goNext();
-  };
-
   return (
     <OnboardingContainer
-      title="Choose AI Summarizer"
-      description="Select how you'd like your meetings summarized."
+      title="Choose Meeting Notes Style"
+      description="Select how you'd like your meeting notes generated."
       step={4}
       totalSteps={isMac ? 7 : 6}
     >
@@ -88,8 +83,8 @@ export function AISummarizerStep() {
 
               {/* BYO note */}
               {tier.id === 'byo' && (
-                <p className="text-[10px] text-[hsl(var(--text-muted))] italic">
-                  You'll configure your API key in Settings after setup
+                <p className="text-xs text-[hsl(var(--text-muted))]">
+                  You'll add your API key in Settings after setup
                 </p>
               )}
             </button>
@@ -100,14 +95,6 @@ export function AISummarizerStep() {
         <p className="text-sm text-[hsl(var(--text-muted))]">
           Not sure? Start with Local AI — you can always switch later in Settings.
         </p>
-
-        {/* Skip link */}
-        <button
-          onClick={handleSkip}
-          className="text-sm text-[hsl(var(--text-muted))] hover:text-[hsl(var(--text-secondary))] transition-colors"
-        >
-          Skip — use free Local AI for now
-        </button>
       </div>
     </OnboardingContainer>
   );

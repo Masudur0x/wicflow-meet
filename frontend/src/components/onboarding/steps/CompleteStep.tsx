@@ -26,7 +26,7 @@ export function CompleteStep() {
     } catch (error) {
       console.error('Failed to complete onboarding:', error);
       toast.error('Failed to complete setup', {
-        description: 'Please try again.',
+        description: 'Something went wrong saving your preferences. Please try again, or restart the app if this keeps happening.',
       });
       setIsCompleting(false);
       setIsFadingOut(false);

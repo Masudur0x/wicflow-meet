@@ -41,7 +41,7 @@ export function LanguageStep() {
             </div>
             <h3 className="font-semibold text-[hsl(var(--text-primary))]">English</h3>
             <p className="text-xs text-[hsl(var(--text-muted))] leading-relaxed">
-              Fastest and most accurate. Smaller download (~670 MB).
+              Fastest and most accurate. Optimized specifically for English (~670 MB).
             </p>
 
             {/* Tooltip for switching later */}
@@ -54,7 +54,7 @@ export function LanguageStep() {
                   </div>
                 </TooltipTrigger>
                 <TooltipContent className="max-w-xs text-sm">
-                  You can switch to the multilingual engine anytime in Settings → Transcript. It will download automatically when you switch.
+                  You can switch to multilingual anytime in the app settings. It will download automatically when you switch.
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -70,7 +70,7 @@ export function LanguageStep() {
             </div>
             <h3 className="font-semibold text-[hsl(var(--text-primary))]">Other Languages</h3>
             <p className="text-xs text-[hsl(var(--text-muted))] leading-relaxed">
-              Supports 99 languages including Bangla, Hindi, Spanish, Arabic, and more. Larger download (~466 MB).
+              Supports 99 languages including Bangla, Hindi, Spanish, Arabic, and more (~466 MB).
             </p>
           </button>
         </div>

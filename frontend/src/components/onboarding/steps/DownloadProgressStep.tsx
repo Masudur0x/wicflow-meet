@@ -494,8 +494,8 @@ export function DownloadProgressStep() {
 
       {state.status === 'error' && state.error && (
         <div className="mt-2 p-3 bg-red-900/20 border border-red-800/30 rounded-md">
-          <p className="text-sm text-red-400 font-medium">Download Error</p>
-          <p className="text-xs text-red-500 mt-1">{state.error}</p>
+          <p className="text-sm text-red-400 font-medium">Download failed</p>
+          <p className="text-xs text-red-500 mt-1">Please check your internet connection and try again.</p>
           {onRetry && (
             <button
               onClick={onRetry}
@@ -516,7 +516,7 @@ export function DownloadProgressStep() {
   return (
     <OnboardingContainer
       title="Getting things ready"
-      description="This runs on your computer — your audio never leaves your machine."
+      description="Downloading AI models to your computer — your audio never leaves your machine."
       step={5}
       totalSteps={isMac ? 7 : 6}
     >
@@ -524,13 +524,13 @@ export function DownloadProgressStep() {
         {/* Download Cards */}
         <div className="w-full max-w-lg space-y-4">
           {useWhisper ? renderDownloadCard(
-            'Transcription Engine (Multilingual)',
+            'Speech Recognition (Multilingual)',
             <Mic className="w-5 h-5 text-[hsl(var(--accent-light))]" />,
             whisperState,
             '~466 MB',
             handleRetryWhisperDownload
           ) : renderDownloadCard(
-            'Transcription Engine',
+            'Speech Recognition',
             <Mic className="w-5 h-5 text-[hsl(var(--accent-light))]" />,
             parakeetState,
             '~670 MB',
@@ -538,7 +538,7 @@ export function DownloadProgressStep() {
           )}
 
           {needsGemmaDownload && renderDownloadCard(
-            'Summary Engine',
+            'Meeting Notes AI',
             <Sparkles className="w-5 h-5 text-[hsl(var(--accent-light))]" />,
             gemmaState,
             selectedSummaryModel === 'gemma3:4b' ? '~2.5 GB' : '~806 MB',

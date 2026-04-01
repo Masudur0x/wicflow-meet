@@ -134,8 +134,8 @@ export function PermissionsStep() {
           {/* System Audio */}
           <PermissionRow
             icon={<Volume2 className="w-5 h-5" />}
-            title="System Audio"
-            description="Required to capture other participants' audio from your speakers"
+            title="Meeting Audio"
+            description="Required to capture other participants' voices during meetings"
             status={permissions.systemAudio}
             isPending={isAudioPending}
             onAction={handleSystemAudioAction}
