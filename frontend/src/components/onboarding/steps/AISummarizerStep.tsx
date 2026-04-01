@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Cpu, Sparkles, Key } from 'lucide-react';
+import { Cpu, Key } from 'lucide-react';
 import { OnboardingContainer } from '../OnboardingContainer';
 import { useOnboarding } from '@/contexts/OnboardingContext';
 
@@ -31,21 +31,14 @@ export function AISummarizerStep() {
   const tiers: TierOption[] = [
     {
       id: 'free',
-      title: 'Free',
-      description: 'Use Ollama for local AI summarization. No data leaves your device.',
+      title: 'Local AI (Free)',
+      description: 'Runs entirely on your computer. No internet or account needed. Good for everyday meetings and English transcription. Best for users who want privacy and simplicity.',
       icon: <Cpu className="w-6 h-6" />,
     },
     {
-      id: 'premium',
-      title: 'Wicflow AI',
-      description: 'Cloud-powered summaries with higher quality and speed.',
-      icon: <Sparkles className="w-6 h-6" />,
-      badge: 'Recommended',
-    },
-    {
       id: 'byo',
-      title: 'BYO Key',
-      description: 'Bring your own API key from OpenAI, Claude, or other providers.',
+      title: 'Use Your Own API Key',
+      description: 'Connect your own ChatGPT or Claude account for higher quality summaries. Best for important meetings, multilingual support, or when you need detailed and accurate notes.',
       icon: <Key className="w-6 h-6" />,
     },
   ];
@@ -84,7 +77,7 @@ export function AISummarizerStep() {
     >
       <div className="flex flex-col items-center space-y-6">
         {/* Tier Cards */}
-        <div className="w-full max-w-lg grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div className="w-full max-w-lg grid grid-cols-1 gap-4 sm:grid-cols-2">
           {tiers.map((tier) => (
             <button
               key={tier.id}
@@ -92,13 +85,6 @@ export function AISummarizerStep() {
               disabled={saving}
               className="relative flex flex-col items-center gap-3 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 text-center transition-all duration-200 hover:border-[hsl(var(--primary))] hover:shadow-[0_0_20px_hsl(var(--accent-glow))] disabled:opacity-50"
             >
-              {/* Recommended badge */}
-              {tier.badge && (
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-[hsl(var(--primary))] px-3 py-0.5 text-xs font-medium text-white">
-                  {tier.badge}
-                </span>
-              )}
-
               {/* Icon */}
               <div className="w-12 h-12 rounded-full bg-[hsl(var(--primary)_/_0.15)] flex items-center justify-center text-[hsl(var(--accent-light))]">
                 {tier.icon}
@@ -112,6 +98,11 @@ export function AISummarizerStep() {
             </button>
           ))}
         </div>
+
+        {/* Helper text */}
+        <p className="text-sm text-[hsl(var(--text-muted))]">
+          Not sure? Start with Local AI — you can always switch later in Settings.
+        </p>
 
         {/* Skip link */}
         <button
