@@ -112,7 +112,14 @@ export function TranscriptSettings({ transcriptModelConfig, setTranscriptModelCo
                                 onValueChange={(value) => {
                                     const provider = value as TranscriptModelProps['provider'];
                                     setUiProvider(provider);
-                                    if (provider !== 'localWhisper' && provider !== 'parakeet') {
+                                    // Auto-save provider switch for local providers so navigating away doesn't lose the change
+                                    if (provider === 'localWhisper' || provider === 'parakeet') {
+                                        setTranscriptModelConfig({
+                                            ...transcriptModelConfig,
+                                            provider,
+                                            model: provider === 'parakeet' ? 'parakeet-tdt-0.6b-v3-int8' : transcriptModelConfig.model,
+                                        });
+                                    } else {
                                         fetchApiKey(provider);
                                     }
                                 }}

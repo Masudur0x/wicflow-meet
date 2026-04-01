@@ -130,10 +130,10 @@ export function LanguageSelection({
   const [saving, setSaving] = useState(false);
   const { setSelectedLanguage } = useConfig();
 
-  // Parakeet only supports auto-detection (doesn't support manual language selection)
+  // Parakeet only supports English auto-detection (no multilingual or translation)
   const isParakeet = provider === 'parakeet';
   const availableLanguages = isParakeet
-    ? LANGUAGES.filter(lang => lang.code === 'auto' || lang.code === 'auto-translate')
+    ? LANGUAGES.filter(lang => lang.code === 'auto')
     : LANGUAGES;
 
   const handleLanguageChange = async (languageCode: string) => {

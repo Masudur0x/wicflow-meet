@@ -60,6 +60,11 @@ app.add_middleware(
     max_age=3600,
 )
 
+# Health check endpoint
+@app.get("/api/health")
+async def health_check():
+    return {"status": "ok", "version": app.version}
+
 # Global database manager instance for meeting management endpoints
 db = DatabaseManager()
 

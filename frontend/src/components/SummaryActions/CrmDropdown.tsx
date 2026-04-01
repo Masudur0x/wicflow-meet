@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react'
 import { toast } from 'sonner'
+import { API_BASE_URL } from '@/lib/api'
 
 interface CrmConnection {
   provider: string
@@ -42,7 +43,7 @@ export function CrmDropdown({
 
   useEffect(() => {
     if (isOpen) {
-      fetch('http://localhost:5167/api/settings/crm')
+      fetch(`${API_BASE_URL}/api/settings/crm`)
         .then(res => res.json())
         .then(data => setConnections(data.connections || []))
         .catch(() => {})
@@ -66,7 +67,7 @@ export function CrmDropdown({
   const handleSend = async (provider: string) => {
     setSending(provider)
     try {
-      const res = await fetch('http://localhost:5167/api/actions/send-to-crm', {
+      const res = await fetch(`${API_BASE_URL}/api/actions/send-to-crm`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

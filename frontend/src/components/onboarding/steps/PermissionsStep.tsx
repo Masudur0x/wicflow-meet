@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 import { Mic, Volume2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { OnboardingContainer } from '../OnboardingContainer';
 import { PermissionRow } from '../shared';
@@ -8,7 +9,8 @@ import { useOnboarding } from '@/contexts/OnboardingContext';
 
 export function PermissionsStep() {
   const { setPermissionStatus, setPermissionsSkipped, permissions, goNext } = useOnboarding();
-  const [isPending, setIsPending] = useState(false);
+  const [isMicPending, setIsMicPending] = useState(false);
+  const [isAudioPending, setIsAudioPending] = useState(false);
 
   // Check permissions - only logs current state, doesn't auto-authorize
   // Actual permission checks are done via explicit user actions (clicking Enable)
@@ -30,14 +32,14 @@ export function PermissionsStep() {
     if (permissions.microphone === 'denied') {
       // Try to open system settings
       try {
-        await invoke('open_system_settings');
+        await invoke('open_system_settings', { preferencPane: 'Privacy_Microphone' });
       } catch {
-        alert('Please open System Settings → Privacy & Security → Microphone, then enable Wicflow Meet.');
+        toast.error('Please open System Settings → Privacy & Security → Microphone, then enable Wicflow Meet.');
       }
       return;
     }
 
-    setIsPending(true);
+    setIsMicPending(true);
     try {
       console.log('[PermissionsStep] Triggering microphone permission...');
       const granted = await invoke<boolean>('trigger_microphone_permission');
@@ -53,7 +55,7 @@ export function PermissionsStep() {
       console.error('[PermissionsStep] Failed to request microphone permission:', err);
       setPermissionStatus('microphone', 'denied');
     } finally {
-      setIsPending(false);
+      setIsMicPending(false);
     }
   };
 
@@ -62,14 +64,14 @@ export function PermissionsStep() {
     if (permissions.systemAudio === 'denied') {
       // Try to open system settings
       try {
-        await invoke('open_system_settings');
+        await invoke('open_system_settings', { preferencPane: 'Privacy_ScreenCapture' });
       } catch {
-        alert('Please open System Settings → Privacy & Security → Screen & System Audio Recording, then enable Wicflow Meet.');
+        toast.error('Please open System Settings → Privacy & Security → Screen & System Audio Recording, then enable Wicflow Meet.');
       }
       return;
     }
 
-    setIsPending(true);
+    setIsAudioPending(true);
     try {
       console.log('[PermissionsStep] Triggering Audio Capture permission...');
       // Backend creates Core Audio tap, captures audio, and verifies it's not silence
@@ -89,7 +91,7 @@ export function PermissionsStep() {
       console.error('[PermissionsStep] Failed to request system audio permission:', err);
       setPermissionStatus('systemAudio', 'denied');
     } finally {
-      setIsPending(false);
+      setIsAudioPending(false);
     }
   };
 
@@ -125,7 +127,7 @@ export function PermissionsStep() {
             title="Microphone"
             description="Required to capture your voice during meetings"
             status={permissions.microphone}
-            isPending={isPending}
+            isPending={isMicPending}
             onAction={handleMicrophoneAction}
           />
 
@@ -135,7 +137,7 @@ export function PermissionsStep() {
             title="System Audio"
             description="Required to capture other participants' audio from your speakers"
             status={permissions.systemAudio}
-            isPending={isPending}
+            isPending={isAudioPending}
             onAction={handleSystemAudioAction}
           />
         </div>

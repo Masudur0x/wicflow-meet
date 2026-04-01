@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 export function CompleteStep() {
   const { completeOnboarding } = useOnboarding();
   const [isCompleting, setIsCompleting] = useState(false);
-
+  const [isFadingOut, setIsFadingOut] = useState(false);
   const handleFinish = async () => {
     if (isCompleting) return;
     setIsCompleting(true);
@@ -16,8 +16,11 @@ export function CompleteStep() {
     try {
       await completeOnboarding();
 
-      // Small delay to ensure state is saved before reload
-      await new Promise(resolve => setTimeout(resolve, 100));
+      // Fade out before reload
+      setIsFadingOut(true);
+
+      // Wait for fade animation + ensure state is saved
+      await new Promise(resolve => setTimeout(resolve, 500));
 
       window.location.reload();
     } catch (error) {
@@ -26,6 +29,7 @@ export function CompleteStep() {
         description: 'Please try again.',
       });
       setIsCompleting(false);
+      setIsFadingOut(false);
     }
   };
 
@@ -34,7 +38,9 @@ export function CompleteStep() {
       title=""
       hideProgress={true}
     >
-      <div className="flex flex-col items-center space-y-8 pt-12">
+      <div
+        className={`flex flex-col items-center space-y-8 pt-12 transition-opacity duration-500 ${isFadingOut ? 'opacity-0' : 'opacity-100'}`}
+      >
         {/* Green checkmark circle */}
         <div className="w-20 h-20 rounded-full bg-green-900/30 flex items-center justify-center">
           <CheckCircle2 className="w-10 h-10 text-green-400" />

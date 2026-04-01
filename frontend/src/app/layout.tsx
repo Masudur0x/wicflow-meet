@@ -222,13 +222,6 @@ export default function RootLayout({
     setShowImportDialog(true);
   }, []);
 
-  const handleOnboardingComplete = () => {
-    console.log('[Layout] Onboarding completed, reloading app')
-    setShowOnboarding(false)
-    setOnboardingCompleted(true)
-    // Optionally reload the window to ensure all state is fresh
-    window.location.reload()
-  }
 
   return (
     <html lang="en" className="dark" data-theme="dark">
@@ -250,7 +243,7 @@ export default function RootLayout({
 
                               {/* Show onboarding or main app */}
                               {showOnboarding ? (
-                                <OnboardingFlow onComplete={handleOnboardingComplete} />
+                                <OnboardingFlow />
                               ) : (
                                 <div className="flex">
                                   <Sidebar />

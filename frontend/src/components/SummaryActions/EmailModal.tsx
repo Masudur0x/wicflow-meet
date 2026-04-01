@@ -3,6 +3,7 @@
 import React, { useState } from 'react'
 import { X, Send } from 'lucide-react'
 import { toast } from 'sonner'
+import { API_BASE_URL } from '@/lib/api'
 
 interface EmailModalProps {
   isOpen: boolean
@@ -29,7 +30,7 @@ export function EmailModal({ isOpen, onClose, subject, body }: EmailModalProps) 
       const emails = toEmails.split(',').map(e => e.trim()).filter(Boolean)
       const bodyHtml = body.replace(/\n/g, '<br>').replace(/^# (.+)$/gm, '<h1>$1</h1>').replace(/^## (.+)$/gm, '<h2>$1</h2>').replace(/^- (.+)$/gm, '<li>$1</li>')
 
-      const res = await fetch('http://localhost:5167/api/actions/send-email', {
+      const res = await fetch(`${API_BASE_URL}/api/actions/send-email`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

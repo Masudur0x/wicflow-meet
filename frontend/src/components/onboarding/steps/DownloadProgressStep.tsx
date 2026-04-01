@@ -5,6 +5,7 @@ import { Mic, Sparkles, Check, Loader2, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { OnboardingContainer } from '../OnboardingContainer';
 import { useOnboarding } from '@/contexts/OnboardingContext';
+import { useIsMac } from '@/hooks/usePlatform';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -25,11 +26,12 @@ export function DownloadProgressStep() {
   const {
     goNext,
     selectedSummaryModel,
-    setSelectedSummaryModel,
     selectedTier,
     selectedLanguage,
     parakeetDownloaded,
     setParakeetDownloaded,
+    whisperDownloaded,
+    setWhisperDownloaded,
     summaryModelDownloaded,
     setSummaryModelDownloaded,
     startBackgroundDownloads,
@@ -40,8 +42,7 @@ export function DownloadProgressStep() {
   // Download Whisper instead of Parakeet if user chose multilingual
   const useWhisper = selectedLanguage === 'multilingual';
 
-  const [recommendedModel, setRecommendedModel] = useState<string>('gemma3:1b');
-  const [isMac, setIsMac] = useState(false);
+  const isMac = useIsMac();
 
   const [parakeetState, setParakeetState] = useState<DownloadState>({
     status: parakeetDownloaded ? 'completed' : 'waiting',
@@ -52,14 +53,12 @@ export function DownloadProgressStep() {
   });
 
   const [whisperState, setWhisperState] = useState<DownloadState>({
-    status: 'waiting',
-    progress: 0,
+    status: whisperDownloaded ? 'completed' : 'waiting',
+    progress: whisperDownloaded ? 100 : 0,
     downloadedMb: 0,
     totalMb: 466, // small model size
     speedMbps: 0,
   });
-
-  const [whisperDownloaded, setWhisperDownloaded] = useState(false);
 
   const [gemmaState, setGemmaState] = useState<DownloadState>({
     status: summaryModelDownloaded ? 'completed' : 'waiting',
@@ -139,7 +138,7 @@ export function DownloadProgressStep() {
 
     try {
       // Call download command directly (no retry command exists for built-in AI)
-      await invoke('builtin_ai_download_model', { modelName: selectedSummaryModel || recommendedModel });
+      await invoke('builtin_ai_download_model', { modelName: selectedSummaryModel || 'gemma3:1b' });
     } catch (error) {
       console.error('[DownloadProgressStep] Summary retry failed:', error);
       setGemmaState((prev) => ({
@@ -168,7 +167,7 @@ export function DownloadProgressStep() {
 
     setWhisperState((prev) => ({
       ...prev,
-      status: 'downloading',
+      status: 'waiting',
       error: undefined,
       progress: 0,
       downloadedMb: 0,
@@ -190,32 +189,6 @@ export function DownloadProgressStep() {
       setTimeout(() => { retryingWhisperRef.current = false; }, 2000);
     }
   };
-
-  // Fetch recommended model and detect platform on mount
-  useEffect(() => {
-    const fetchRecommendation = async () => {
-      try {
-        const model = await invoke<string>('builtin_ai_get_recommended_model');
-        setRecommendedModel(model);
-        setSelectedSummaryModel(model);  // Update context
-      } catch (error) {
-        console.error('Failed to get recommended model:', error);
-        // Keep default gemma3:1b
-      }
-    };
-
-    const checkPlatform = async () => {
-      try {
-        const { platform } = await import('@tauri-apps/plugin-os');
-        setIsMac(platform() === 'macos');
-      } catch (e) {
-        setIsMac(navigator.userAgent.includes('Mac'));
-      }
-    };
-
-    fetchRecommendation();
-    checkPlatform();
-  }, []);
 
   // Start downloads on mount
   useEffect(() => {
@@ -294,7 +267,7 @@ export function DownloadProgressStep() {
       error?: string;
     }>('builtin-ai-download-progress', (event) => {
       const { model, progress, downloaded_mb, total_mb, speed_mbps, status, error } = event.payload;
-      if (model === selectedSummaryModel || model === 'gemma3:1b' || model === 'gemma3:4b') {
+      if (model === selectedSummaryModel) {
         setGemmaState((prev) => ({
           ...prev,
           status: status === 'completed'
@@ -398,12 +371,21 @@ export function DownloadProgressStep() {
 
   const handleContinue = async () => {
     if (useWhisper) {
-      // For Whisper, check if download completed or errored
-      if (whisperState.status === 'error') {
-        toast.error('Transcription engine required', {
-          description: 'Please retry the download before continuing.',
-        });
-        return;
+      try {
+        await invoke('whisper_init');
+        const actuallyAvailable = await invoke<boolean>('whisper_has_available_models');
+        if (actuallyAvailable && !whisperDownloaded) {
+          console.log('[DownloadProgressStep] Whisper model available but state not updated');
+          setWhisperDownloaded(true);
+          setWhisperState((prev) => ({ ...prev, status: 'completed', progress: 100 }));
+        } else if (!actuallyAvailable && whisperState.status === 'error') {
+          toast.error('Transcription engine required', {
+            description: 'Please retry the download before continuing.',
+          });
+          return;
+        }
+      } catch (error) {
+        console.warn('[DownloadProgressStep] Failed to verify Whisper model:', error);
       }
     } else {
       // For Parakeet, verify actual model availability (catches state drift)
@@ -451,7 +433,8 @@ export function DownloadProgressStep() {
     title: string,
     icon: React.ReactNode,
     state: DownloadState,
-    modelSize: string
+    modelSize: string,
+    onRetry?: () => void
   ) => (
     <div className="bg-[hsl(var(--card))] rounded-xl border border-[hsl(var(--border))] p-5">
       <div className="flex items-center justify-between mb-4">
@@ -513,9 +496,9 @@ export function DownloadProgressStep() {
         <div className="mt-2 p-3 bg-red-900/20 border border-red-800/30 rounded-md">
           <p className="text-sm text-red-400 font-medium">Download Error</p>
           <p className="text-xs text-red-500 mt-1">{state.error}</p>
-          {(title.startsWith('Transcription Engine') || title === 'Summary Engine') && (
+          {onRetry && (
             <button
-              onClick={title.startsWith('Transcription Engine') ? (useWhisper ? handleRetryWhisperDownload : handleRetryDownload) : handleRetrySummaryDownload}
+              onClick={onRetry}
               className="mt-3 w-full h-9 px-4 bg-[hsl(var(--primary))] hover:bg-[hsl(var(--accent-dark))] text-white text-sm font-medium rounded-md transition-colors flex items-center justify-center gap-2"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -544,19 +527,22 @@ export function DownloadProgressStep() {
             'Transcription Engine (Multilingual)',
             <Mic className="w-5 h-5 text-[hsl(var(--accent-light))]" />,
             whisperState,
-            '~466 MB'
+            '~466 MB',
+            handleRetryWhisperDownload
           ) : renderDownloadCard(
             'Transcription Engine',
             <Mic className="w-5 h-5 text-[hsl(var(--accent-light))]" />,
             parakeetState,
-            '~670 MB'
+            '~670 MB',
+            handleRetryDownload
           )}
 
           {needsGemmaDownload && renderDownloadCard(
             'Summary Engine',
             <Sparkles className="w-5 h-5 text-[hsl(var(--accent-light))]" />,
             gemmaState,
-            recommendedModel === 'gemma3:4b' ? '~2.5 GB' : '~806 MB'
+            selectedSummaryModel === 'gemma3:4b' ? '~2.5 GB' : '~806 MB',
+            handleRetrySummaryDownload
           )}
         </div>
 

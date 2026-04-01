@@ -3,6 +3,7 @@
 import React, { useState } from 'react'
 import { ClipboardCopy, FileDown, Mail, Database } from 'lucide-react'
 import { toast } from 'sonner'
+import { API_BASE_URL } from '@/lib/api'
 import { EmailModal } from './EmailModal'
 import { CrmDropdown } from './CrmDropdown'
 
@@ -27,7 +28,7 @@ export function SummaryActionsBar({ summaryText, meetingName, meetingDate }: Sum
     const filename = `${date}-${safeName}.md`
 
     try {
-      const res = await fetch('http://localhost:5167/api/actions/save-md', {
+      const res = await fetch(`${API_BASE_URL}/api/actions/save-md`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ content: summaryText, filename })

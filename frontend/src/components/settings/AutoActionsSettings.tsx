@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { toast } from 'sonner'
+import { API_BASE_URL } from '@/lib/api'
 
 export function AutoActionsSettings() {
   const [autoCopy, setAutoCopy] = useState(false)
@@ -11,7 +12,7 @@ export function AutoActionsSettings() {
   const [mdSavePath, setMdSavePath] = useState('~/Documents/Wicflow Meet')
 
   useEffect(() => {
-    fetch('http://localhost:5167/api/settings/auto-actions')
+    fetch(`${API_BASE_URL}/api/settings/auto-actions`)
       .then(res => res.json())
       .then(data => {
         setAutoCopy(data.autoCopyClipboard || false)
@@ -24,22 +25,33 @@ export function AutoActionsSettings() {
   }, [])
 
   const handleToggle = async (key: string, value: boolean, setter: (v: boolean) => void) => {
-    setter(value)
-    await fetch('http://localhost:5167/api/settings/auto-actions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ [key]: value })
-    })
-    toast.success('Setting updated')
+    setter(value);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/settings/auto-actions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ [key]: value })
+      });
+      if (!res.ok) throw new Error('Save failed');
+      toast.success('Setting updated');
+    } catch (error) {
+      setter(!value); // Revert on failure
+      toast.error('Failed to save setting');
+    }
   }
 
   const handlePathSave = async () => {
-    await fetch('http://localhost:5167/api/settings/auto-actions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ mdSavePath: mdSavePath })
-    })
-    toast.success('Save path updated')
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/settings/auto-actions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mdSavePath: mdSavePath })
+      });
+      if (!res.ok) throw new Error('Save failed');
+      toast.success('Save path updated');
+    } catch (error) {
+      toast.error('Failed to update save path');
+    }
   }
 
   const toggleClass = (enabled: boolean) =>

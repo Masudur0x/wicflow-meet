@@ -77,10 +77,15 @@ export function usePlatform(): Platform {
 }
 
 /**
+ * Simple helper to check if the current platform is macOS
+ */
+export function useIsMac(): boolean {
+  return usePlatform() === 'macos';
+}
+
+/**
  * Simple helper to check if the current platform is Linux
- * @returns true if running on Linux
  */
 export function useIsLinux(): boolean {
-  const currentPlatform = usePlatform();
-  return currentPlatform === 'linux';
+  return usePlatform() === 'linux';
 }

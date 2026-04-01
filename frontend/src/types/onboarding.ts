@@ -1,11 +1,10 @@
-export type OnboardingStep = 1 | 2 | 3 | 4 | 5 | 6;
+export type OnboardingStep = 1 | 2 | 3 | 4 | 5 | 6 | 7;
 
 export type PermissionStatus = 'checking' | 'not_determined' | 'authorized' | 'denied';
 
 export interface OnboardingPermissions {
   microphone: PermissionStatus;
   systemAudio: PermissionStatus;
-  screenRecording: PermissionStatus;
 }
 
 export interface OnboardingContainerProps {

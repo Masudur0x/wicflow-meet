@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import { API_BASE_URL } from '@/lib/api'
 
 type Tier = 'free' | 'byo'
 type ByoProvider = 'claude' | 'openai'
@@ -12,24 +13,33 @@ export function SummarizationTierSettings() {
   const [saved, setSaved] = useState(false)
 
   useEffect(() => {
-    fetch('http://localhost:5167/api/settings/summarization-tier')
+    fetch(`${API_BASE_URL}/api/settings/summarization-tier`)
       .then(res => res.json())
       .then(data => {
         if (data.tier && data.tier !== 'premium') setTier(data.tier)
         if (data.byo_provider) setByoProvider(data.byo_provider)
         if (data.byo_api_key) setByoApiKey(data.byo_api_key)
       })
-      .catch(() => {})
+      .catch(() => {
+        // Backend may not be running - use defaults
+        console.warn('[SummarizationTierSettings] Failed to load tier settings');
+      })
   }, [])
 
   const handleSave = async () => {
-    await fetch('http://localhost:5167/api/settings/summarization-tier', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ tier, byo_provider: byoProvider, byo_api_key: byoApiKey })
-    })
-    setSaved(true)
-    setTimeout(() => setSaved(false), 2000)
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/settings/summarization-tier`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tier, byo_provider: byoProvider, byo_api_key: byoApiKey })
+      });
+      if (!res.ok) throw new Error('Save failed');
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch (error) {
+      console.error('[SummarizationTierSettings] Failed to save:', error);
+      setSaved(false);
+    }
   }
 
   return (

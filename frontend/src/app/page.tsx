@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { RecordingControls } from '@/components/RecordingControls';
 import { useSidebar } from '@/components/Sidebar/SidebarProvider';
-import { usePermissionCheck } from '@/hooks/usePermissionCheck';
 import { useRecordingState, RecordingStatus } from '@/contexts/RecordingStateContext';
 import { useTranscripts } from '@/contexts/TranscriptContext';
 import { useConfig } from '@/contexts/ConfigContext';
@@ -21,12 +20,16 @@ import { TranscriptRecovery } from '@/components/TranscriptRecovery';
 import { indexedDBService } from '@/services/indexedDBService';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
+import { useBackendHealth } from '@/hooks/useBackendHealth';
 
 export default function Home() {
   // Local page state (not moved to contexts)
   const [isRecording, setIsRecordingState] = useState(false);
-  const [barHeights, setBarHeights] = useState(['58%', '76%', '58%']);
+  const [barHeights, setBarHeights] = useState(['15px', '19px', '15px']);
   const [showRecoveryDialog, setShowRecoveryDialog] = useState(false);
+
+  // Backend health check
+  const { isConnected: isBackendConnected, isChecking: isBackendChecking } = useBackendHealth();
 
   // Use contexts for state management
   const { meetingTitle } = useTranscripts();
@@ -37,7 +40,6 @@ export default function Home() {
   const { status, isStopping, isProcessing, isSaving } = recordingState;
 
   // Hooks
-  const { hasMicrophone } = usePermissionCheck();
   const { setIsMeetingActive, isCollapsed: sidebarCollapsed, refetchMeetings } = useSidebar();
   const { modals, messages, showModal, hideModal } = useModalState(transcriptModelConfig);
   const { isRecordingDisabled, setIsRecordingDisabled } = useRecordingStateSync(isRecording, setIsRecordingState, setIsMeetingActive);
@@ -141,7 +143,7 @@ export default function Home() {
         await refetchMeetings();
 
         // If no more recoverable meetings, clear session flag so dialog can show again
-        if (recoverableMeetings.length === 0) {
+        if (recoverableMeetings.length <= 1) {
           sessionStorage.removeItem('recovery_dialog_shown');
         }
 
@@ -196,6 +198,14 @@ export default function Home() {
       transition={{ duration: 0.3, ease: 'easeOut' }}
       className="flex flex-col h-screen bg-gray-50"
     >
+      {/* Backend disconnected banner */}
+      {!isBackendChecking && !isBackendConnected && (
+        <div className="bg-red-600 text-white text-center text-sm py-2 px-4 flex items-center justify-center gap-2 shrink-0">
+          <span className="inline-block w-2 h-2 rounded-full bg-red-300 animate-pulse" />
+          Backend is unreachable — summaries and meeting storage won't work until it's running.
+        </div>
+      )}
+
       {/* All Modals supported*/}
       <SettingsModals
         modals={modals}
@@ -220,8 +230,7 @@ export default function Home() {
         />
 
         {/* Recording controls - only show when permissions are granted or already recording and not showing status messages */}
-        {(hasMicrophone || isRecording) &&
-          status !== RecordingStatus.PROCESSING_TRANSCRIPTS &&
+        {status !== RecordingStatus.PROCESSING_TRANSCRIPTS &&
           status !== RecordingStatus.SAVING && (
             <div className="fixed bottom-12 left-0 right-0 z-10">
               <div

@@ -10,6 +10,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import Analytics from '@/lib/analytics';
 import { useRecordingState } from '@/contexts/RecordingStateContext';
+import { toast } from 'sonner';
 
 interface RecordingControlsProps {
   isRecording: boolean;
@@ -45,7 +46,6 @@ export const RecordingControls: React.FC<RecordingControlsProps> = ({
   const recordingState = useRecordingState();
   const isPaused = recordingState.isPaused;
 
-  const [showPlayback, setShowPlayback] = useState(false);
   const [recordingPath, setRecordingPath] = useState<string | null>(null);
   const [transcript, setTranscript] = useState<string>('');
   const [isProcessing, setIsProcessing] = useState(false);
@@ -59,16 +59,7 @@ export const RecordingControls: React.FC<RecordingControlsProps> = ({
   const [speechDetected, setSpeechDetected] = useState(false);
   const [deviceError, setDeviceError] = useState<{ title: string, message: string } | null>(null);
 
-  const currentTime = 0;
-  const duration = 0;
-  const isPlaying = false;
-  const progress = 0;
 
-  const formatTime = (time: number) => {
-    const minutes = Math.floor(time / 60);
-    const seconds = Math.floor(time % 60);
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-  };
 
   useEffect(() => {
     const checkTauri = async () => {
@@ -90,7 +81,6 @@ export const RecordingControls: React.FC<RecordingControlsProps> = ({
     console.log('Meeting name:', meetingName);
     console.log('Current isRecording state:', isRecording);
 
-    setShowPlayback(false);
     setTranscript(''); // Clear any previous transcript
     setSpeechDetected(false); // Reset speech detection on new recording
 
@@ -213,7 +203,7 @@ export const RecordingControls: React.FC<RecordingControlsProps> = ({
       console.log('Recording paused successfully');
     } catch (error) {
       console.error('Failed to pause recording:', error);
-      alert('Failed to pause recording. Please check the console for details.');
+      toast.error('Failed to pause recording', { description: 'Please check the console for details.' });
     } finally {
       setIsPausing(false);
     }
@@ -231,17 +221,11 @@ export const RecordingControls: React.FC<RecordingControlsProps> = ({
       console.log('Recording resumed successfully');
     } catch (error) {
       console.error('Failed to resume recording:', error);
-      alert('Failed to resume recording. Please check the console for details.');
+      toast.error('Failed to resume recording', { description: 'Please check the console for details.' });
     } finally {
       setIsResuming(false);
     }
   }, [isRecording, isPaused, isResuming]);
-
-  useEffect(() => {
-    return () => {
-      // Cleanup on unmount if needed
-    };
-  }, []);
 
   useEffect(() => {
     console.log('Setting up recording event listeners');
@@ -350,43 +334,6 @@ export const RecordingControls: React.FC<RecordingControlsProps> = ({
             </div>
           ) : (
             <>
-              {showPlayback ? (
-                <>
-                  <button
-                    onClick={handleStartRecording}
-                    className="w-10 h-10 flex items-center justify-center bg-red-500 rounded-full text-white hover:bg-red-600 transition-colors"
-                  >
-                    <Mic size={16} />
-                  </button>
-
-                  <div className="w-px h-6 bg-gray-200 mx-1" />
-
-                  <div className="flex items-center space-x-1 mx-2">
-                    <div className="text-sm text-gray-600 min-w-[40px]">
-                      {formatTime(currentTime)}
-                    </div>
-                    <div
-                      className="relative w-24 h-1 bg-gray-200 rounded-full"
-                    >
-                      <div
-                        className="absolute h-full bg-blue-500 rounded-full"
-                        style={{ width: `${progress}%` }}
-                      />
-                    </div>
-                    <div className="text-sm text-gray-600 min-w-[40px]">
-                      {formatTime(duration)}
-                    </div>
-                  </div>
-
-                  <button
-                    className="w-10 h-10 flex items-center justify-center bg-gray-300 rounded-full text-white cursor-not-allowed"
-                    disabled
-                  >
-                    <Play size={16} />
-                  </button>
-                </>
-              ) : (
-                <>
                   {!isRecording ? (
                     // Start recording button
                     <Tooltip>
@@ -485,7 +432,6 @@ export const RecordingControls: React.FC<RecordingControlsProps> = ({
                     ))}
                   </div>
                 </>
-              )}
             </>
           )}
         </div>

@@ -1,6 +1,7 @@
 'use client'
 
 import React, { createContext, useContext, useState, useEffect } from 'react'
+import { API_BASE_URL } from '@/lib/api'
 
 interface AutoActions {
   autoCopyClipboard: boolean
@@ -32,7 +33,7 @@ export function SummaryActionsProvider({ children }: { children: React.ReactNode
   const [autoActions, setAutoActions] = useState<AutoActions>(defaultAutoActions)
 
   useEffect(() => {
-    fetch('http://localhost:5167/api/settings/auto-actions')
+    fetch(`${API_BASE_URL}/api/settings/auto-actions`)
       .then(res => res.json())
       .then(data => setAutoActions({ ...defaultAutoActions, ...data }))
       .catch(() => {})

@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Languages, Mic, Info } from 'lucide-react';
 import { OnboardingContainer } from '../OnboardingContainer';
 import { useOnboarding } from '@/contexts/OnboardingContext';
+import { useIsMac } from '@/hooks/usePlatform';
 import {
   Tooltip,
   TooltipContent,
@@ -11,19 +12,7 @@ import {
 
 export function LanguageStep() {
   const { goNext, setSelectedLanguage } = useOnboarding();
-  const [isMac, setIsMac] = useState(false);
-
-  useEffect(() => {
-    const checkPlatform = async () => {
-      try {
-        const { platform } = await import('@tauri-apps/plugin-os');
-        setIsMac(platform() === 'macos');
-      } catch (e) {
-        setIsMac(navigator.userAgent.includes('Mac'));
-      }
-    };
-    checkPlatform();
-  }, []);
+  const isMac = useIsMac();
 
   const handleSelect = (language: 'english' | 'multilingual') => {
     setSelectedLanguage(language);
@@ -36,6 +25,8 @@ export function LanguageStep() {
       description="This helps us download the right transcription engine for you."
       step={3}
       totalSteps={isMac ? 7 : 6}
+      showNavigation={true}
+      canGoPrevious={true}
     >
       <div className="flex flex-col items-center space-y-6">
         {/* Language Cards */}
@@ -50,7 +41,7 @@ export function LanguageStep() {
             </div>
             <h3 className="font-semibold text-[hsl(var(--text-primary))]">English</h3>
             <p className="text-xs text-[hsl(var(--text-muted))] leading-relaxed">
-              Fast and accurate. Optimized for English-only meetings.
+              Fastest and most accurate. Smaller download (~670 MB).
             </p>
 
             {/* Tooltip for switching later */}
@@ -79,7 +70,7 @@ export function LanguageStep() {
             </div>
             <h3 className="font-semibold text-[hsl(var(--text-primary))]">Other Languages</h3>
             <p className="text-xs text-[hsl(var(--text-muted))] leading-relaxed">
-              Supports 99 languages including Bangla, Hindi, Spanish, Arabic, and more.
+              Supports 99 languages including Bangla, Hindi, Spanish, Arabic, and more. Larger download (~466 MB).
             </p>
           </button>
         </div>

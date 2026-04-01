@@ -15,6 +15,7 @@ interface OnboardingStatus {
     parakeet: string;
     summary: string;
   };
+  selected_language?: 'english' | 'multilingual' | null;
   last_updated: string;
 }
 
@@ -42,6 +43,7 @@ interface OnboardingContextType {
   summaryModelProgressInfo: SummaryModelProgressInfo;
   selectedSummaryModel: string;
   selectedTier: string | null;
+  whisperDownloaded: boolean;
   selectedLanguage: 'english' | 'multilingual' | null;
   databaseExists: boolean;
   isBackgroundDownloading: boolean;
@@ -54,6 +56,7 @@ interface OnboardingContextType {
   goPrevious: () => void;
   // Setters
   setParakeetDownloaded: (value: boolean) => void;
+  setWhisperDownloaded: (value: boolean) => void;
   setSummaryModelDownloaded: (value: boolean) => void;
   setSelectedSummaryModel: (value: string) => void;
   setSelectedTier: (value: string) => void;
@@ -72,6 +75,7 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
   const [currentStep, setCurrentStep] = useState(1);
   const [completed, setCompleted] = useState(false);
   const [parakeetDownloaded, setParakeetDownloaded] = useState(false);
+  const [whisperDownloaded, setWhisperDownloaded] = useState(false);
   const [parakeetProgress, setParakeetProgress] = useState(0);
   const [parakeetProgressInfo, setParakeetProgressInfo] = useState<ParakeetProgressInfo>({
     percent: 0,
@@ -97,11 +101,11 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
   const [permissions, setPermissions] = useState<OnboardingPermissions>({
     microphone: 'not_determined',
     systemAudio: 'not_determined',
-    screenRecording: 'not_determined',
   });
   const [permissionsSkipped, setPermissionsSkipped] = useState(false);
 
   const saveTimeoutRef = useRef<NodeJS.Timeout>();
+  const gemmaTimeoutRef = useRef<NodeJS.Timeout>();
 
   // Load status on mount and initialize database
   useEffect(() => {
@@ -256,7 +260,46 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
       unlistenComplete.then(fn => fn());
       unlistenError.then(fn => fn());
     };
-  }, [selectedSummaryModel]);
+  }, []);
+
+  // Listen to Whisper download progress
+  useEffect(() => {
+    const unlisten = listen<{
+      progress: number;
+      downloaded_mb?: number;
+      total_mb?: number;
+      speed_mbps?: number;
+      status?: string;
+    }>(
+      'model-download-progress',
+      (event) => {
+        const { progress, status } = event.payload;
+        if (status === 'completed' || progress >= 100) {
+          setWhisperDownloaded(true);
+        }
+      }
+    );
+
+    const unlistenComplete = listen(
+      'model-download-complete',
+      () => {
+        setWhisperDownloaded(true);
+      }
+    );
+
+    const unlistenError = listen<{ error: string }>(
+      'model-download-error',
+      (event) => {
+        console.error('[OnboardingContext] Whisper download error:', event.payload.error);
+      }
+    );
+
+    return () => {
+      unlisten.then(fn => fn());
+      unlistenComplete.then(fn => fn());
+      unlistenError.then(fn => fn());
+    };
+  }, []);
 
   // Listen to summary model (Built-in AI) download progress
   useEffect(() => {
@@ -272,7 +315,7 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
       (event) => {
         const { model, progress, downloaded_mb, total_mb, speed_mbps, status } = event.payload;
         // Check if this is the selected summary model (gemma3:1b or gemma3:4b)
-        if (model === selectedSummaryModel || model === 'gemma3:1b' || model === 'gemma3:4b') {
+        if (model === selectedSummaryModel) {
           setSummaryModelProgress(progress);
           setSummaryModelProgressInfo({
             percent: progress,
@@ -315,7 +358,13 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
         setCurrentStep(verifiedStatus.currentStep);
         setCompleted(verifiedStatus.completed);
         setParakeetDownloaded(verifiedStatus.parakeetDownloaded);
+        setWhisperDownloaded(verifiedStatus.whisperDownloaded);
         setSummaryModelDownloaded(verifiedStatus.summaryModelDownloaded);
+
+        // Restore selectedLanguage from saved status
+        if (status.selected_language) {
+          setSelectedLanguage(status.selected_language);
+        }
 
         console.log('[OnboardingContext] Verified status:', verifiedStatus);
 
@@ -340,6 +389,16 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
     } catch (error) {
       console.warn('[OnboardingContext] Failed to verify Parakeet:', error);
       parakeetDownloaded = false;
+    }
+
+    // Verify Whisper model exists on disk
+    let whisperVerified = false;
+    try {
+      await invoke('whisper_init');
+      whisperVerified = await invoke<boolean>('whisper_has_available_models');
+      console.log('[OnboardingContext] Whisper verified on disk:', whisperVerified);
+    } catch (error) {
+      console.warn('[OnboardingContext] Failed to verify Whisper:', error);
     }
 
     // Verify Summary model exists on disk - check if ANY model is available
@@ -369,6 +428,7 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
       currentStep,
       completed,
       parakeetDownloaded,
+      whisperDownloaded: whisperVerified,
       summaryModelDownloaded,
     };
   };
@@ -392,6 +452,7 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
             parakeet: parakeetDownloaded ? 'downloaded' : 'not_downloaded',
             summary: summaryModelDownloaded ? 'downloaded' : 'not_downloaded',
           },
+          selected_language: selectedLanguage,
           last_updated: new Date().toISOString(),
         },
       });
@@ -414,6 +475,7 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
       // Onboarding always uses builtin-ai with selected model
       await invoke('complete_onboarding', {
         model: selectedSummaryModel,
+        language: selectedLanguage,
       });
       setCompleted(true);
       console.log('[OnboardingContext] Onboarding completed with model:', selectedSummaryModel);
@@ -450,7 +512,7 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
 
       // Start Gemma download after a delay to prioritize transcription engine bandwidth
       if (includeGemma && !summaryModelDownloaded) {
-        setTimeout(() => {
+        gemmaTimeoutRef.current = setTimeout(() => {
           console.log('[OnboardingContext] Starting Gemma download (delayed to prioritize transcription engine)');
           invoke('builtin_ai_download_model', { modelName: selectedSummaryModel || 'gemma3:1b' })
             .catch(err => console.error('[OnboardingContext] Gemma download failed:', err));
@@ -480,6 +542,17 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
       console.warn('[OnboardingContext] Failed to check active downloads:', error);
     }
   };
+
+  // Reset isBackgroundDownloading when all downloads complete (Fix 9)
+  useEffect(() => {
+    if (isBackgroundDownloading) {
+      const transcriptionDone = parakeetDownloaded || whisperDownloaded;
+      if (transcriptionDone && summaryModelDownloaded) {
+        console.log('[OnboardingContext] All downloads complete, resetting isBackgroundDownloading');
+        setIsBackgroundDownloading(false);
+      }
+    }
+  }, [parakeetDownloaded, whisperDownloaded, summaryModelDownloaded, isBackgroundDownloading]);
 
   const retryParakeetDownload = async () => {
     console.log('[OnboardingContext] Retrying Parakeet download');
@@ -523,6 +596,7 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
       value={{
         currentStep,
         parakeetDownloaded,
+        whisperDownloaded,
         parakeetProgress,
         parakeetProgressInfo,
         summaryModelDownloaded,
@@ -539,6 +613,7 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
         goNext,
         goPrevious,
         setParakeetDownloaded,
+        setWhisperDownloaded,
         setSummaryModelDownloaded,
         setSelectedSummaryModel,
         setSelectedTier,

@@ -75,19 +75,23 @@ export function TranscriptPanel({
                     </span>
                   </Button>
                 )}
-                {transcriptModelConfig.provider === "localWhisper" &&
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => showModal('languageSettings')}
-                    title="Language"
-                  >
-                    <GlobeIcon />
-                    <span className='hidden md:inline'>
-                      Language
-                    </span>
-                  </Button>
-                }
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    if (transcriptModelConfig.provider === "localWhisper") {
+                      showModal('languageSettings');
+                    } else {
+                      showModal('languageSettings', 'Switch to Whisper in Settings → Transcription for multilingual support');
+                    }
+                  }}
+                  title={transcriptModelConfig.provider === "localWhisper" ? "Language" : "Switch to Whisper for multilingual"}
+                >
+                  <GlobeIcon />
+                  <span className='hidden md:inline'>
+                    Language
+                  </span>
+                </Button>
               </ButtonGroup>
             </div>
           </div>
@@ -111,7 +115,7 @@ export function TranscriptPanel({
         <div className="flex justify-center">
           <div className="w-2/3 max-w-[750px]">
             {showEmptyState ? (
-              <div className="flex flex-col items-center justify-center text-center px-6 pt-32">
+              <div className="flex flex-col items-center justify-center text-center px-6 min-h-[60vh]">
                 <div className="w-16 h-16 rounded-full bg-blue-50 flex items-center justify-center mb-5">
                   <Mic className="w-8 h-8 text-blue-500" />
                 </div>
