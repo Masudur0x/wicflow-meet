@@ -431,7 +431,6 @@ export const RecordingControls: React.FC<RecordingControlsProps> = ({
                       />
                     ))}
                   </div>
-                </>
             </>
           )}
         </div>
