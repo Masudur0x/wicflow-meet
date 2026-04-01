@@ -21,6 +21,7 @@ import { indexedDBService } from '@/services/indexedDBService';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { useBackendHealth } from '@/hooks/useBackendHealth';
+import { ModelDownloadBanner } from '@/components/ModelDownloadBanner';
 
 export default function Home() {
   // Local page state (not moved to contexts)
@@ -205,6 +206,9 @@ export default function Home() {
           Meeting storage is unavailable — meeting notes and saved recordings won't work until the Wicflow Meet service is running. Try restarting the app.
         </div>
       )}
+
+      {/* Model download banner — shown when user skipped download during onboarding */}
+      <ModelDownloadBanner />
 
       {/* All Modals supported*/}
       <SettingsModals

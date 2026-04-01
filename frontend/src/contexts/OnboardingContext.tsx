@@ -251,6 +251,7 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
         const { modelName } = event.payload;
         if (modelName === PARAKEET_MODEL) {
           console.error('Parakeet download error:', event.payload.error);
+          setIsBackgroundDownloading(false);
         }
       }
     );
@@ -291,6 +292,7 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
       'model-download-error',
       (event) => {
         console.error('[OnboardingContext] Whisper download error:', event.payload.error);
+        setIsBackgroundDownloading(false);
       }
     );
 
@@ -543,16 +545,17 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
     }
   };
 
-  // Reset isBackgroundDownloading when all downloads complete (Fix 9)
+  // Reset isBackgroundDownloading when transcription download completes
+  // (transcription is the only download that blocks recording)
   useEffect(() => {
     if (isBackgroundDownloading) {
       const transcriptionDone = parakeetDownloaded || whisperDownloaded;
-      if (transcriptionDone && summaryModelDownloaded) {
-        console.log('[OnboardingContext] All downloads complete, resetting isBackgroundDownloading');
+      if (transcriptionDone) {
+        console.log('[OnboardingContext] Transcription download complete, resetting isBackgroundDownloading');
         setIsBackgroundDownloading(false);
       }
     }
-  }, [parakeetDownloaded, whisperDownloaded, summaryModelDownloaded, isBackgroundDownloading]);
+  }, [parakeetDownloaded, whisperDownloaded, isBackgroundDownloading]);
 
   const retryParakeetDownload = async () => {
     console.log('[OnboardingContext] Retrying Parakeet download');

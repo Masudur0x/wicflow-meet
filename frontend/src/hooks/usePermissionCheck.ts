@@ -8,6 +8,9 @@ export interface PermissionStatus {
   error: string | null;
 }
 
+// Grace period after onboarding completes — suppress warnings while OS catches up
+const POST_ONBOARDING_GRACE_MS = 5000;
+
 export function usePermissionCheck() {
   const [status, setStatus] = useState<PermissionStatus>({
     hasMicrophone: false,
@@ -15,6 +18,7 @@ export function usePermissionCheck() {
     isChecking: true,
     error: null,
   });
+  const [inGracePeriod, setInGracePeriod] = useState(false);
 
   const checkPermissions = async () => {
     setStatus(prev => ({ ...prev, isChecking: true, error: null }));
@@ -73,13 +77,35 @@ export function usePermissionCheck() {
     }
   };
 
-  // Check permissions on mount
+  // Check permissions on mount, with grace period after onboarding
   useEffect(() => {
+    // Check if onboarding just completed (timestamp set in CompleteStep before reload)
+    const onboardingCompletedAt = sessionStorage.getItem('onboarding_completed_at');
+    if (onboardingCompletedAt) {
+      const elapsed = Date.now() - parseInt(onboardingCompletedAt, 10);
+      if (elapsed < POST_ONBOARDING_GRACE_MS) {
+        // Within grace period — suppress warnings while OS permission state catches up
+        setInGracePeriod(true);
+        const remaining = POST_ONBOARDING_GRACE_MS - elapsed;
+        const timer = setTimeout(() => {
+          setInGracePeriod(false);
+          checkPermissions();
+        }, remaining);
+        // Still run an initial check (results won't show until grace period ends)
+        checkPermissions();
+        sessionStorage.removeItem('onboarding_completed_at');
+        return () => clearTimeout(timer);
+      }
+      // Grace period already expired — clean up and check normally
+      sessionStorage.removeItem('onboarding_completed_at');
+    }
+
     checkPermissions();
   }, []);
 
   return {
     ...status,
+    inGracePeriod,
     checkPermissions,
     requestPermissions,
   };

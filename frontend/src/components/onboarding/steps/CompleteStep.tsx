@@ -16,6 +16,9 @@ export function CompleteStep() {
     try {
       await completeOnboarding();
 
+      // Mark completion time so main screen can suppress permission warnings briefly
+      sessionStorage.setItem('onboarding_completed_at', Date.now().toString());
+
       // Fade out before reload
       setIsFadingOut(true);
 

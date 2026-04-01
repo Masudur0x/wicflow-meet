@@ -70,6 +70,7 @@ export default function RootLayout({
 }) {
   const [showOnboarding, setShowOnboarding] = useState(false)
   const [onboardingCompleted, setOnboardingCompleted] = useState(false)
+  const [mainAppVisible, setMainAppVisible] = useState(false)
 
   // Import audio state
   const [showDropOverlay, setShowDropOverlay] = useState(false)
@@ -88,6 +89,8 @@ export default function RootLayout({
           setShowOnboarding(true)
         } else {
           console.log('[Layout] Onboarding completed, showing main app')
+          // Trigger fade-in after a frame so the transition is visible
+          requestAnimationFrame(() => setMainAppVisible(true))
         }
       })
       .catch((error) => {
@@ -245,7 +248,7 @@ export default function RootLayout({
                               {showOnboarding ? (
                                 <OnboardingFlow />
                               ) : (
-                                <div className="flex">
+                                <div className={`flex transition-opacity duration-500 ${mainAppVisible ? 'opacity-100' : 'opacity-0'}`}>
                                   <Sidebar />
                                   <MainContent>{children}</MainContent>
                                 </div>

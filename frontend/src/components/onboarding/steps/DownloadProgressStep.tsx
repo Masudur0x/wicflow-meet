@@ -378,11 +378,6 @@ export function DownloadProgressStep() {
           console.log('[DownloadProgressStep] Whisper model available but state not updated');
           setWhisperDownloaded(true);
           setWhisperState((prev) => ({ ...prev, status: 'completed', progress: 100 }));
-        } else if (!actuallyAvailable && whisperState.status === 'error') {
-          toast.error('Transcription engine required', {
-            description: 'Please retry the download before continuing.',
-          });
-          return;
         }
       } catch (error) {
         console.warn('[DownloadProgressStep] Failed to verify Whisper model:', error);
@@ -401,11 +396,6 @@ export function DownloadProgressStep() {
             status: 'completed',
             progress: 100,
           }));
-        } else if (!actuallyAvailable && parakeetState.status === 'error') {
-          toast.error('Transcription engine required', {
-            description: 'Please retry the download before continuing.',
-          });
-          return;
         }
       } catch (error) {
         console.warn('[DownloadProgressStep] Failed to verify model:', error);
@@ -570,7 +560,7 @@ export function DownloadProgressStep() {
         </AnimatePresence>
 
         {/* Continue Button */}
-        <div className="w-full max-w-xs">
+        <div className="w-full max-w-xs space-y-3">
           <Button
             onClick={handleContinue}
             disabled={useWhisper ? !whisperDownloaded : !parakeetDownloaded}
@@ -585,6 +575,16 @@ export function DownloadProgressStep() {
               'Continue'
             )}
           </Button>
+
+          {/* Skip option for slow connections */}
+          {(useWhisper ? !whisperDownloaded : !parakeetDownloaded) && (
+            <button
+              onClick={handleContinue}
+              className="w-full text-sm text-[hsl(var(--text-muted))] hover:text-[hsl(var(--text-secondary))] transition-colors"
+            >
+              Skip for now — download later
+            </button>
+          )}
         </div>
       </div>
     </OnboardingContainer>

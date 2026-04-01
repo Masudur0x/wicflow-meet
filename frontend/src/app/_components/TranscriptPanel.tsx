@@ -35,7 +35,7 @@ export function TranscriptPanel({
   const { transcripts, transcriptContainerRef, copyTranscript } = useTranscripts();
   const { transcriptModelConfig } = useConfig();
   const { isRecording, isPaused } = useRecordingState();
-  const { checkPermissions, isChecking, hasSystemAudio, hasMicrophone } = usePermissionCheck();
+  const { checkPermissions, isChecking, hasSystemAudio, hasMicrophone, inGracePeriod } = usePermissionCheck();
   const { meetings } = useSidebar();
   const isLinux = useIsLinux();
 
@@ -98,8 +98,8 @@ export function TranscriptPanel({
         </div>
       </div>
 
-      {/* Permission Warning - Not needed on Linux */}
-      {!isRecording && !isChecking && !isLinux && (
+      {/* Permission Warning - Not needed on Linux, suppressed briefly after onboarding */}
+      {!isRecording && !isChecking && !isLinux && !inGracePeriod && (
         <div className="flex justify-center px-4 pt-4">
           <PermissionWarning
             hasMicrophone={hasMicrophone}
