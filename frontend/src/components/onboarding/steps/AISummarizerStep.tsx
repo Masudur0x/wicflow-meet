@@ -37,8 +37,8 @@ export function AISummarizerStep() {
     },
     {
       id: 'byo',
-      title: 'Use Your Own API Key',
-      description: 'Connect your ChatGPT or Claude account for higher quality summaries.',
+      title: 'Connect ChatGPT or Claude',
+      description: 'Use your own API key for higher quality summaries.',
       icon: <Key className="w-6 h-6" />,
     },
   ];

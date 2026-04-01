@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { invoke } from '@tauri-apps/api/core';
 import { getVersion } from '@tauri-apps/api/app';
 import Image from 'next/image';
-import AnalyticsConsentSwitch from "./AnalyticsConsentSwitch";
 import { UpdateDialog } from "./UpdateDialog";
 import { updateService, UpdateInfo } from '@/services/updateService';
 import { Button } from './ui/button';
@@ -99,7 +98,7 @@ export function About() {
                 <div className="grid grid-cols-2 gap-2">
                     <div className="bg-gray-50 rounded p-3 hover:bg-gray-100 transition-colors">
                         <h3 className="font-bold text-sm text-gray-900 mb-1">Privacy-first</h3>
-                        <p className="text-xs text-gray-600 leading-relaxed">Your data & AI processing workflow can now stay within your premise. No cloud, no leaks.</p>
+                        <p className="text-xs text-gray-600 leading-relaxed">Your data & AI processing stays on your device. No cloud, no leaks.</p>
                     </div>
                     <div className="bg-gray-50 rounded p-3 hover:bg-gray-100 transition-colors">
                         <h3 className="font-bold text-sm text-gray-900 mb-1">Use Any Model</h3>
@@ -133,7 +132,7 @@ export function About() {
                     onClick={handleContactClick}
                     className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded transition-colors duration-200 shadow-sm hover:shadow-md"
                 >
-                    Contact Us
+                    Learn More on GitHub
                 </button>
             </div>
 
@@ -143,8 +142,6 @@ export function About() {
                     Built by Wicflow
                 </p>
             </div>
-            <AnalyticsConsentSwitch />
-
             {/* Update Dialog */}
             <UpdateDialog
                 open={showUpdateDialog}

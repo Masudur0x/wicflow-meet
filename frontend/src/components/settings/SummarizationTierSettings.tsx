@@ -46,8 +46,7 @@ export function SummarizationTierSettings() {
           }`}
         >
           <div className="text-sm font-medium text-[hsl(var(--text-primary))]">Local AI (Free)</div>
-          <div className="text-xs text-[hsl(var(--text-secondary))] mt-1">Runs entirely on your computer</div>
-          <div className="text-xs text-[hsl(var(--text-muted))] mt-2">Runs on your computer. No internet needed. Great for everyday meetings.</div>
+          <div className="text-xs text-[hsl(var(--text-muted))] mt-1">Runs on your computer. No internet needed. Great for everyday meetings.</div>
         </button>
 
         <button
@@ -58,9 +57,8 @@ export function SummarizationTierSettings() {
               : 'border-[hsl(var(--border))] hover:border-[hsl(var(--border-medium))]'
           }`}
         >
-          <div className="text-sm font-medium text-[hsl(var(--text-primary))]">Use Your Own API Key</div>
-          <div className="text-xs text-[hsl(var(--text-secondary))] mt-1">Connect ChatGPT or Claude</div>
-          <div className="text-xs text-[hsl(var(--text-muted))] mt-2">Connect your ChatGPT or Claude account for higher quality summaries.</div>
+          <div className="text-sm font-medium text-[hsl(var(--text-primary))]">Connect ChatGPT or Claude</div>
+          <div className="text-xs text-[hsl(var(--text-muted))] mt-1">Use your own API key for higher quality summaries.</div>
         </button>
       </div>
 
@@ -68,8 +66,8 @@ export function SummarizationTierSettings() {
         <div className="space-y-3">
           <p className="text-xs text-[hsl(var(--text-muted))] bg-[hsl(var(--secondary))] border border-[hsl(var(--border))] rounded-lg px-3 py-2">
             You'll need an API key from your chosen provider. Get one from{' '}
-            <span className="font-medium text-[hsl(var(--text-secondary))]">platform.openai.com</span> (ChatGPT) or{' '}
-            <span className="font-medium text-[hsl(var(--text-secondary))]">console.anthropic.com</span> (Claude).
+            <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer" className="font-medium text-[hsl(var(--primary))] hover:underline">platform.openai.com</a> (ChatGPT) or{' '}
+            <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener noreferrer" className="font-medium text-[hsl(var(--primary))] hover:underline">console.anthropic.com</a> (Claude).
           </p>
 
           <label className="block text-sm text-[hsl(var(--text-secondary))]">Provider</label>

@@ -32,7 +32,7 @@ export function PermissionsStep() {
       try {
         await invoke('open_system_settings');
       } catch {
-        alert('Please enable microphone access in System Preferences > Security & Privacy > Microphone');
+        alert('Please open System Settings → Privacy & Security → Microphone, then enable Wicflow Meet.');
       }
       return;
     }
@@ -64,7 +64,7 @@ export function PermissionsStep() {
       try {
         await invoke('open_system_settings');
       } catch {
-        alert('Please enable Audio Capture in System Settings -> Privacy & Security -> Audio Capture');
+        alert('Please open System Settings → Privacy & Security → Screen & System Audio Recording, then enable Wicflow Meet.');
       }
       return;
     }
@@ -133,7 +133,7 @@ export function PermissionsStep() {
           <PermissionRow
             icon={<Volume2 className="w-5 h-5" />}
             title="System Audio"
-            description="Click Enable to grant Audio Capture permission"
+            description="Required to capture other participants' audio from your speakers"
             status={permissions.systemAudio}
             isPending={isPending}
             onAction={handleSystemAudioAction}

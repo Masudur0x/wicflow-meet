@@ -216,9 +216,9 @@ export function RecordingSettings({ onSave }: RecordingSettingsProps) {
       {/* Recording Notification Toggle */}
       <div className="flex items-center justify-between p-4 border rounded-lg">
         <div className="flex-1">
-          <div className="font-medium">Recording Start Notification</div>
+          <div className="font-medium">Participant Reminder</div>
           <div className="text-sm text-gray-600">
-            Show reminder to inform participants when recording starts
+            Show an on-screen reminder to inform participants that recording has started
           </div>
         </div>
         <Switch

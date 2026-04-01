@@ -591,7 +591,10 @@ export function DownloadProgressStep() {
             className="w-full h-11 rounded-full bg-[hsl(var(--primary))] hover:bg-[hsl(var(--accent-dark))] text-white shadow-[0_0_20px_hsl(var(--accent-glow))] disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
           >
             {(useWhisper ? !whisperDownloaded : !parakeetDownloaded) ? (
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Downloading...
+              </>
             ) : (
               'Continue'
             )}
