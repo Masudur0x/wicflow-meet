@@ -37,6 +37,7 @@ interface SummaryPanelProps {
   onGenerateSummary: (customPrompt: string) => Promise<void>;
   onStopGeneration: () => void;
   customPrompt: string;
+  onPromptChange: (value: string) => void;
   summaryResponse: SummaryResponse | null;
   onSaveSummary: (summary: Summary | { markdown?: string; summary_json?: any[] }) => Promise<void>;
   onSummaryChange: (summary: Summary) => void;
@@ -73,6 +74,7 @@ export function SummaryPanel({
   onGenerateSummary,
   onStopGeneration,
   customPrompt,
+  onPromptChange,
   summaryResponse,
   onSaveSummary,
   onSummaryChange,
@@ -121,7 +123,19 @@ export function SummaryPanel({
 
         {/* Button groups - only show when summary exists */}
         {aiSummary && !isSummaryLoading && (
-          <div className="flex items-center justify-center w-full pt-0 gap-2">
+          <div className="flex flex-col items-center w-full pt-0 gap-2">
+            {/* Custom prompt for regeneration */}
+            {transcripts.length > 0 && (
+              <div className="w-full max-w-md">
+                <textarea
+                  placeholder="Add context for AI summary. For example people involved, meeting overview, objective etc..."
+                  className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm min-h-[50px] resize-y"
+                  value={customPrompt}
+                  onChange={(e) => onPromptChange(e.target.value)}
+                />
+              </div>
+            )}
+            <div className="flex items-center gap-2">
             {/* Left-aligned: Summary Generator Button Group */}
             <div className="flex-shrink-0">
               <SummaryGeneratorButtonGroup
@@ -155,6 +169,7 @@ export function SummaryPanel({
                 onOpenFolder={onOpenFolder}
                 hasSummary={!!aiSummary}
               />
+            </div>
             </div>
           </div>
         )}
@@ -190,8 +205,18 @@ export function SummaryPanel({
         </div>
       ) : !aiSummary ? (
         <div className="flex flex-col h-full">
-          {/* Centered Summary Generator Button Group when no summary */}
-          <div className="flex items-center justify-center pt-8 pb-4">
+          {/* Custom prompt + Generate button when no summary */}
+          <div className="flex flex-col items-center pt-8 pb-4 gap-3">
+            {transcripts.length > 0 && (
+              <div className="w-full max-w-md px-4">
+                <textarea
+                  placeholder="Add context for AI summary. For example people involved, meeting overview, objective etc..."
+                  className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm min-h-[60px] resize-y"
+                  value={customPrompt}
+                  onChange={(e) => onPromptChange(e.target.value)}
+                />
+              </div>
+            )}
             <SummaryGeneratorButtonGroup
               modelConfig={modelConfig}
               setModelConfig={setModelConfig}

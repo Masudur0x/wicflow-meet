@@ -2,11 +2,12 @@ import { VirtualizedTranscriptView } from '@/components/VirtualizedTranscriptVie
 import { PermissionWarning } from '@/components/PermissionWarning';
 import { Button } from '@/components/ui/button';
 import { ButtonGroup } from '@/components/ui/button-group';
-import { Copy, GlobeIcon } from 'lucide-react';
+import { Copy, GlobeIcon, Mic } from 'lucide-react';
 import { useTranscripts } from '@/contexts/TranscriptContext';
 import { useConfig } from '@/contexts/ConfigContext';
 import { useRecordingState } from '@/contexts/RecordingStateContext';
 import { usePermissionCheck } from '@/hooks/usePermissionCheck';
+import { useSidebar } from '@/components/Sidebar/SidebarProvider';
 import { ModalType } from '@/hooks/useModalState';
 import { useIsLinux } from '@/hooks/usePlatform';
 import { useMemo } from 'react';
@@ -35,7 +36,11 @@ export function TranscriptPanel({
   const { transcriptModelConfig } = useConfig();
   const { isRecording, isPaused } = useRecordingState();
   const { checkPermissions, isChecking, hasSystemAudio, hasMicrophone } = usePermissionCheck();
+  const { meetings } = useSidebar();
   const isLinux = useIsLinux();
+
+  // Show empty state when no meetings exist, not recording, and no transcripts
+  const showEmptyState = meetings.length === 0 && !isRecording && transcripts.length === 0;
 
   // Convert transcripts to segments for virtualized view
   const segments = useMemo(() =>
@@ -105,15 +110,32 @@ export function TranscriptPanel({
       <div className="pb-20">
         <div className="flex justify-center">
           <div className="w-2/3 max-w-[750px]">
-            <VirtualizedTranscriptView
-              segments={segments}
-              isRecording={isRecording}
-              isPaused={isPaused}
-              isProcessing={isProcessingStop}
-              isStopping={isStopping}
-              enableStreaming={isRecording}
-              showConfidence={true}
-            />
+            {showEmptyState ? (
+              <div className="flex flex-col items-center justify-center text-center px-6 pt-32">
+                <div className="w-16 h-16 rounded-full bg-blue-50 flex items-center justify-center mb-5">
+                  <Mic className="w-8 h-8 text-blue-500" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                  Ready to record your first meeting
+                </h3>
+                <p className="text-sm text-gray-500 mb-6 max-w-xs">
+                  Click the microphone button below to start recording
+                </p>
+                <svg className="w-6 h-6 text-gray-300 animate-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                </svg>
+              </div>
+            ) : (
+              <VirtualizedTranscriptView
+                segments={segments}
+                isRecording={isRecording}
+                isPaused={isPaused}
+                isProcessing={isProcessingStop}
+                isStopping={isStopping}
+                enableStreaming={isRecording}
+                showConfidence={true}
+              />
+            )}
           </div>
         </div>
       </div>
