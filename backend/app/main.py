@@ -40,17 +40,24 @@ if not logger.handlers:
 app = FastAPI(
     title="Wicflow Meet API",
     description="API for processing and summarizing meeting transcripts",
-    version="0.1.0"
+    version="0.3.0"
 )
 
-# Configure CORS
+# Configure CORS - restricted to local Tauri app connections
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],     # Allow all origins for testing
+    allow_origins=[
+        "http://localhost:3118",       # Frontend dev server
+        "http://127.0.0.1:3118",
+        "http://localhost:5167",       # Backend self-reference
+        "http://127.0.0.1:5167",
+        "tauri://localhost",           # Tauri app (macOS/Linux)
+        "https://tauri.localhost",     # Tauri app (Windows)
+    ],
     allow_credentials=True,
-    allow_methods=["*"],     # Allow all methods
-    allow_headers=["*"],     # Allow all headers
-    max_age=3600,            # Cache preflight requests for 1 hour
+    allow_methods=["GET", "POST", "DELETE", "OPTIONS"],
+    allow_headers=["*"],
+    max_age=3600,
 )
 
 # Global database manager instance for meeting management endpoints
@@ -180,7 +187,7 @@ async def get_meetings():
         return [{"id": meeting["id"], "title": meeting["title"]} for meeting in meetings]
     except Exception as e:
         logger.error(f"Error getting meetings: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="An internal server error occurred. Please try again.")
 
 @app.get("/get-meeting/{meeting_id}", response_model=MeetingDetailsResponse)
 async def get_meeting(meeting_id: str):
@@ -194,7 +201,7 @@ async def get_meeting(meeting_id: str):
         raise
     except Exception as e:
         logger.error(f"Error getting meeting: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="An internal server error occurred. Please try again.")
 
 @app.post("/save-meeting-title")
 async def save_meeting_title(data: MeetingTitleUpdate):
@@ -204,7 +211,7 @@ async def save_meeting_title(data: MeetingTitleUpdate):
         return {"message": "Meeting title saved successfully"}
     except Exception as e:
         logger.error(f"Error saving meeting title: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="An internal server error occurred. Please try again.")
 
 @app.post("/delete-meeting")
 async def delete_meeting(data: DeleteMeetingRequest):
@@ -217,7 +224,7 @@ async def delete_meeting(data: DeleteMeetingRequest):
             raise HTTPException(status_code=500, detail="Failed to delete meeting")
     except Exception as e:
         logger.error(f"Error deleting meeting: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="An internal server error occurred. Please try again.")
 
 async def process_transcript_background(process_id: str, transcript: TranscriptRequest, custom_prompt: str):
     """Background task to process transcript"""
@@ -366,7 +373,7 @@ async def process_transcript_api(
 
     except Exception as e:
         logger.error(f"Error in process_transcript_api: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="An internal server error occurred. Please try again.")
 
 @app.get("/get-summary/{meeting_id}")
 async def get_summary(meeting_id: str):
@@ -507,7 +514,7 @@ async def get_summary(meeting_id: str):
                 "data": None,
                 "start": None,
                 "end": None,
-                "error": f"Internal server error: {str(e)}"
+                "error": "An internal server error occurred. Please try again."
             }
         )
 
@@ -548,7 +555,7 @@ async def save_transcript(request: SaveTranscriptRequest):
         return {"status": "success", "message": "Transcript saved successfully", "meeting_id": meeting_id}
     except Exception as e:
         logger.error(f"Error saving transcript: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="An internal server error occurred. Please try again.")
 
 @app.get("/get-model-config")
 async def get_model_config():
@@ -594,14 +601,14 @@ async def get_api_key(request: GetApiKeyRequest):
     try:
         return await db.get_api_key(request.provider)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="An internal server error occurred. Please try again.")
 
 @app.post("/get-transcript-api-key")
 async def get_transcript_api_key(request: GetApiKeyRequest):
     try:
         return await db.get_transcript_api_key(request.provider)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="An internal server error occurred. Please try again.")
 
 class MeetingSummaryUpdate(BaseModel):
     meeting_id: str
@@ -618,7 +625,7 @@ async def save_meeting_summary(data: MeetingSummaryUpdate):
         raise HTTPException(status_code=404, detail=str(ve))
     except Exception as e:
         logger.error(f"Error saving meeting summary: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="An internal server error occurred. Please try again.")
 
 class SearchRequest(BaseModel):
     query: str
@@ -631,7 +638,7 @@ async def search_transcripts(request: SearchRequest):
         return JSONResponse(content=results)
     except Exception as e:
         logger.error(f"Error searching transcripts: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="An internal server error occurred. Please try again.")
 
 class SummarizeTierRequest(BaseModel):
     transcript: str

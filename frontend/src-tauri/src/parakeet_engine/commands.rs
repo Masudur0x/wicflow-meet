@@ -13,8 +13,13 @@ static MODELS_DIR: Mutex<Option<PathBuf>> = Mutex::new(None);
 /// Initialize the models directory path using app_data_dir
 /// This should be called during app setup before parakeet_init
 pub fn set_models_directory<R: Runtime>(app: &AppHandle<R>) {
-    let app_data_dir = app.path().app_data_dir()
-        .expect("Failed to get app data dir");
+    let app_data_dir = match app.path().app_data_dir() {
+        Ok(dir) => dir,
+        Err(e) => {
+            log::error!("Failed to get app data dir: {}. Parakeet models directory will not be available.", e);
+            return;
+        }
+    };
 
     let models_dir = app_data_dir.join("models");
 
@@ -28,18 +33,21 @@ pub fn set_models_directory<R: Runtime>(app: &AppHandle<R>) {
 
     log::info!("Parakeet models directory set to: {}", models_dir.display());
 
-    let mut guard = MODELS_DIR.lock().unwrap();
+    let Ok(mut guard) = MODELS_DIR.lock() else {
+        log::error!("Failed to acquire lock on MODELS_DIR");
+        return;
+    };
     *guard = Some(models_dir);
 }
 
 /// Get the configured models directory
 fn get_models_directory() -> Option<PathBuf> {
-    MODELS_DIR.lock().unwrap().clone()
+    MODELS_DIR.lock().ok()?.clone()
 }
 
 #[command]
 pub async fn parakeet_init() -> Result<(), String> {
-    let mut guard = PARAKEET_ENGINE.lock().unwrap();
+    let mut guard = PARAKEET_ENGINE.lock().map_err(|e| format!("Failed to acquire parakeet engine lock: {}", e))?;
     if guard.is_some() {
         return Ok(());
     }
@@ -54,7 +62,7 @@ pub async fn parakeet_init() -> Result<(), String> {
 #[command]
 pub async fn parakeet_get_available_models() -> Result<Vec<ModelInfo>, String> {
     let engine = {
-        let guard = PARAKEET_ENGINE.lock().unwrap();
+        let guard = PARAKEET_ENGINE.lock().map_err(|e| format!("Failed to acquire parakeet engine lock: {}", e))?;
         guard.as_ref().cloned()
     };
 
@@ -74,7 +82,7 @@ pub async fn parakeet_load_model<R: Runtime>(
     model_name: String
 ) -> Result<(), String> {
     let engine = {
-        let guard = PARAKEET_ENGINE.lock().unwrap();
+        let guard = PARAKEET_ENGINE.lock().map_err(|e| format!("Failed to acquire parakeet engine lock: {}", e))?;
         guard.as_ref().cloned()
     };
 
@@ -125,7 +133,7 @@ pub async fn parakeet_load_model<R: Runtime>(
 #[command]
 pub async fn parakeet_get_current_model() -> Result<Option<String>, String> {
     let engine = {
-        let guard = PARAKEET_ENGINE.lock().unwrap();
+        let guard = PARAKEET_ENGINE.lock().map_err(|e| format!("Failed to acquire parakeet engine lock: {}", e))?;
         guard.as_ref().cloned()
     };
 
@@ -139,7 +147,7 @@ pub async fn parakeet_get_current_model() -> Result<Option<String>, String> {
 #[command]
 pub async fn parakeet_is_model_loaded() -> Result<bool, String> {
     let engine = {
-        let guard = PARAKEET_ENGINE.lock().unwrap();
+        let guard = PARAKEET_ENGINE.lock().map_err(|e| format!("Failed to acquire parakeet engine lock: {}", e))?;
         guard.as_ref().cloned()
     };
 
@@ -153,7 +161,7 @@ pub async fn parakeet_is_model_loaded() -> Result<bool, String> {
 #[command]
 pub async fn parakeet_has_available_models() -> Result<bool, String> {
     let engine = {
-        let guard = PARAKEET_ENGINE.lock().unwrap();
+        let guard = PARAKEET_ENGINE.lock().map_err(|e| format!("Failed to acquire parakeet engine lock: {}", e))?;
         guard.as_ref().cloned()
     };
 
@@ -178,7 +186,7 @@ pub async fn parakeet_has_available_models() -> Result<bool, String> {
 #[command]
 pub async fn parakeet_validate_model_ready() -> Result<String, String> {
     let engine = {
-        let guard = PARAKEET_ENGINE.lock().unwrap();
+        let guard = PARAKEET_ENGINE.lock().map_err(|e| format!("Failed to acquire parakeet engine lock: {}", e))?;
         guard.as_ref().cloned()
     };
 
@@ -212,7 +220,7 @@ pub async fn parakeet_validate_model_ready() -> Result<String, String> {
         let first_model = available_models.iter()
             .find(|m| m.quantization == crate::parakeet_engine::QuantizationType::Int8)
             .or_else(|| available_models.first())
-            .unwrap();
+            .ok_or_else(|| "No Parakeet models available".to_string())?;
 
         engine
             .load_model(&first_model.name)
@@ -231,7 +239,7 @@ pub async fn parakeet_validate_model_ready_with_config<R: tauri::Runtime>(
     app: &tauri::AppHandle<R>,
 ) -> Result<String, String> {
     let engine = {
-        let guard = PARAKEET_ENGINE.lock().unwrap();
+        let guard = PARAKEET_ENGINE.lock().map_err(|e| format!("Failed to acquire parakeet engine lock: {}", e))?;
         guard.as_ref().cloned()
     };
 
@@ -316,7 +324,7 @@ pub async fn parakeet_validate_model_ready_with_config<R: tauri::Runtime>(
                     .iter()
                     .find(|m| m.quantization == crate::parakeet_engine::QuantizationType::Int8)
                     .or_else(|| available_models.first())
-                    .unwrap()
+                    .ok_or_else(|| "No Parakeet models available".to_string())?
                     .name
                     .clone()
             }
@@ -327,7 +335,7 @@ pub async fn parakeet_validate_model_ready_with_config<R: tauri::Runtime>(
                 .iter()
                 .find(|m| m.quantization == crate::parakeet_engine::QuantizationType::Int8)
                 .or_else(|| available_models.first())
-                .unwrap()
+                .ok_or_else(|| "No Parakeet models available".to_string())?
                 .name
                 .clone()
         };
@@ -346,7 +354,7 @@ pub async fn parakeet_validate_model_ready_with_config<R: tauri::Runtime>(
 #[command]
 pub async fn parakeet_transcribe_audio(audio_data: Vec<f32>) -> Result<String, String> {
     let engine = {
-        let guard = PARAKEET_ENGINE.lock().unwrap();
+        let guard = PARAKEET_ENGINE.lock().map_err(|e| format!("Failed to acquire parakeet engine lock: {}", e))?;
         guard.as_ref().cloned()
     };
 
@@ -363,7 +371,7 @@ pub async fn parakeet_transcribe_audio(audio_data: Vec<f32>) -> Result<String, S
 #[command]
 pub async fn parakeet_get_models_directory() -> Result<String, String> {
     let engine = {
-        let guard = PARAKEET_ENGINE.lock().unwrap();
+        let guard = PARAKEET_ENGINE.lock().map_err(|e| format!("Failed to acquire parakeet engine lock: {}", e))?;
         guard.as_ref().cloned()
     };
 
@@ -381,7 +389,7 @@ pub async fn parakeet_download_model<R: Runtime>(
     model_name: String,
 ) -> Result<(), String> {
     let engine = {
-        let guard = PARAKEET_ENGINE.lock().unwrap();
+        let guard = PARAKEET_ENGINE.lock().map_err(|e| format!("Failed to acquire parakeet engine lock: {}", e))?;
         guard.as_ref().cloned()
     };
 
@@ -469,7 +477,7 @@ pub async fn parakeet_cancel_download<R: Runtime>(
     model_name: String,
 ) -> Result<(), String> {
     let engine = {
-        let guard = PARAKEET_ENGINE.lock().unwrap();
+        let guard = PARAKEET_ENGINE.lock().map_err(|e| format!("Failed to acquire parakeet engine lock: {}", e))?;
         guard.as_ref().cloned()
     };
 
@@ -504,7 +512,7 @@ pub async fn parakeet_retry_download<R: Runtime>(
     log::info!("Retrying download for: {}", model_name);
 
     let engine = {
-        let guard = PARAKEET_ENGINE.lock().unwrap();
+        let guard = PARAKEET_ENGINE.lock().map_err(|e| format!("Failed to acquire parakeet engine lock: {}", e))?;
         guard.as_ref().cloned()
     };
 
@@ -541,7 +549,7 @@ pub async fn parakeet_retry_download<R: Runtime>(
 #[command]
 pub async fn parakeet_delete_corrupted_model(model_name: String) -> Result<String, String> {
     let engine = {
-        let guard = PARAKEET_ENGINE.lock().unwrap();
+        let guard = PARAKEET_ENGINE.lock().map_err(|e| format!("Failed to acquire parakeet engine lock: {}", e))?;
         guard.as_ref().cloned()
     };
 

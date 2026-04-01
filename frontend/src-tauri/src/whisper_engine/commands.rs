@@ -13,8 +13,13 @@ static MODELS_DIR: Mutex<Option<PathBuf>> = Mutex::new(None);
 /// Initialize the models directory path using app_data_dir
 /// This should be called during app setup before whisper_init
 pub fn set_models_directory<R: Runtime>(app: &AppHandle<R>) {
-    let app_data_dir = app.path().app_data_dir()
-        .expect("Failed to get app data dir");
+    let app_data_dir = match app.path().app_data_dir() {
+        Ok(dir) => dir,
+        Err(e) => {
+            log::error!("Failed to get app data dir: {}. Whisper models directory will not be available.", e);
+            return;
+        }
+    };
 
     let models_dir = app_data_dir.join("models");
 
@@ -28,18 +33,21 @@ pub fn set_models_directory<R: Runtime>(app: &AppHandle<R>) {
 
     log::info!("Models directory set to: {}", models_dir.display());
 
-    let mut guard = MODELS_DIR.lock().unwrap();
+    let Ok(mut guard) = MODELS_DIR.lock() else {
+        log::error!("Failed to acquire lock on MODELS_DIR");
+        return;
+    };
     *guard = Some(models_dir);
 }
 
 /// Get the configured models directory
 fn get_models_directory() -> Option<PathBuf> {
-    MODELS_DIR.lock().unwrap().clone()
+    MODELS_DIR.lock().ok()?.clone()
 }
 
 #[command]
 pub async fn whisper_init() -> Result<(), String> {
-    let mut guard = WHISPER_ENGINE.lock().unwrap();
+    let mut guard = WHISPER_ENGINE.lock().map_err(|e| format!("Failed to acquire whisper engine lock: {}", e))?;
     if guard.is_some() {
         return Ok(());
     }
@@ -54,7 +62,7 @@ pub async fn whisper_init() -> Result<(), String> {
 #[command]
 pub async fn whisper_get_available_models() -> Result<Vec<ModelInfo>, String> {
     let engine = {
-        let guard = WHISPER_ENGINE.lock().unwrap();
+        let guard = WHISPER_ENGINE.lock().map_err(|e| format!("Failed to acquire whisper engine lock: {}", e))?;
         guard.as_ref().cloned()
     };
 
@@ -129,7 +137,7 @@ pub async fn whisper_load_model(
     model_name: String
 ) -> Result<(), String> {
     let engine = {
-        let guard = WHISPER_ENGINE.lock().unwrap();
+        let guard = WHISPER_ENGINE.lock().map_err(|e| format!("Failed to acquire whisper engine lock: {}", e))?;
         guard.as_ref().cloned()
     };
 
@@ -180,7 +188,7 @@ pub async fn whisper_load_model(
 #[command]
 pub async fn whisper_get_current_model() -> Result<Option<String>, String> {
     let engine = {
-        let guard = WHISPER_ENGINE.lock().unwrap();
+        let guard = WHISPER_ENGINE.lock().map_err(|e| format!("Failed to acquire whisper engine lock: {}", e))?;
         guard.as_ref().cloned()
     };
 
@@ -194,7 +202,7 @@ pub async fn whisper_get_current_model() -> Result<Option<String>, String> {
 #[command]
 pub async fn whisper_is_model_loaded() -> Result<bool, String> {
     let engine = {
-        let guard = WHISPER_ENGINE.lock().unwrap();
+        let guard = WHISPER_ENGINE.lock().map_err(|e| format!("Failed to acquire whisper engine lock: {}", e))?;
         guard.as_ref().cloned()
     };
 
@@ -208,7 +216,7 @@ pub async fn whisper_is_model_loaded() -> Result<bool, String> {
 #[command]
 pub async fn whisper_has_available_models() -> Result<bool, String> {
     let engine = {
-        let guard = WHISPER_ENGINE.lock().unwrap();
+        let guard = WHISPER_ENGINE.lock().map_err(|e| format!("Failed to acquire whisper engine lock: {}", e))?;
         guard.as_ref().cloned()
     };
 
@@ -233,7 +241,7 @@ pub async fn whisper_has_available_models() -> Result<bool, String> {
 #[command]
 pub async fn whisper_validate_model_ready() -> Result<String, String> {
     let engine = {
-        let guard = WHISPER_ENGINE.lock().unwrap();
+        let guard = WHISPER_ENGINE.lock().map_err(|e| format!("Failed to acquire whisper engine lock: {}", e))?;
         guard.as_ref().cloned()
     };
 
@@ -281,7 +289,7 @@ pub async fn whisper_validate_model_ready_with_config<R: tauri::Runtime>(
     app: &tauri::AppHandle<R>,
 ) -> Result<String, String> {
     let engine = {
-        let guard = WHISPER_ENGINE.lock().unwrap();
+        let guard = WHISPER_ENGINE.lock().map_err(|e| format!("Failed to acquire whisper engine lock: {}", e))?;
         guard.as_ref().cloned()
     };
 
@@ -387,7 +395,7 @@ pub async fn whisper_validate_model_ready_with_config<R: tauri::Runtime>(
 #[command]
 pub async fn whisper_transcribe_audio(audio_data: Vec<f32>) -> Result<String, String> {
     let engine = {
-        let guard = WHISPER_ENGINE.lock().unwrap();
+        let guard = WHISPER_ENGINE.lock().map_err(|e| format!("Failed to acquire whisper engine lock: {}", e))?;
         guard.as_ref().cloned()
     };
 
@@ -406,7 +414,7 @@ pub async fn whisper_transcribe_audio(audio_data: Vec<f32>) -> Result<String, St
 #[command]
 pub async fn whisper_get_models_directory() -> Result<String, String> {
     let engine = {
-        let guard = WHISPER_ENGINE.lock().unwrap();
+        let guard = WHISPER_ENGINE.lock().map_err(|e| format!("Failed to acquire whisper engine lock: {}", e))?;
         guard.as_ref().cloned()
     };
 
@@ -424,7 +432,7 @@ pub async fn whisper_download_model(
     model_name: String,
 ) -> Result<(), String> {
     let engine = {
-        let guard = WHISPER_ENGINE.lock().unwrap();
+        let guard = WHISPER_ENGINE.lock().map_err(|e| format!("Failed to acquire whisper engine lock: {}", e))?;
         guard.as_ref().cloned()
     };
 
@@ -487,7 +495,7 @@ pub async fn whisper_download_model(
 #[command]
 pub async fn whisper_cancel_download(model_name: String) -> Result<(), String> {
     let engine = {
-        let guard = WHISPER_ENGINE.lock().unwrap();
+        let guard = WHISPER_ENGINE.lock().map_err(|e| format!("Failed to acquire whisper engine lock: {}", e))?;
         guard.as_ref().cloned()
     };
 
@@ -504,7 +512,7 @@ pub async fn whisper_cancel_download(model_name: String) -> Result<(), String> {
 #[command]
 pub async fn whisper_delete_corrupted_model(model_name: String) -> Result<String, String> {
     let engine = {
-        let guard = WHISPER_ENGINE.lock().unwrap();
+        let guard = WHISPER_ENGINE.lock().map_err(|e| format!("Failed to acquire whisper engine lock: {}", e))?;
         guard.as_ref().cloned()
     };
 
