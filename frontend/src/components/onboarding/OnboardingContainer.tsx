@@ -9,7 +9,7 @@ export function OnboardingContainer({
   description,
   children,
   step,
-  totalSteps = 5,
+  totalSteps = 7,
   stepOffset = 0,
   hideProgress = false,
   className,

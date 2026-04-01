@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Cpu, Key } from 'lucide-react';
 import { OnboardingContainer } from '../OnboardingContainer';
 import { useOnboarding } from '@/contexts/OnboardingContext';
+import { useIsMac } from '@/hooks/usePlatform';
+import { API_BASE_URL } from '@/lib/api';
 
 interface TierOption {
   id: string;
@@ -13,20 +15,8 @@ interface TierOption {
 
 export function AISummarizerStep() {
   const { goNext, setSelectedTier } = useOnboarding();
-  const [isMac, setIsMac] = useState(false);
+  const isMac = useIsMac();
   const [saving, setSaving] = useState(false);
-
-  useEffect(() => {
-    const checkPlatform = async () => {
-      try {
-        const { platform } = await import('@tauri-apps/plugin-os');
-        setIsMac(platform() === 'macos');
-      } catch (e) {
-        setIsMac(navigator.userAgent.includes('Mac'));
-      }
-    };
-    checkPlatform();
-  }, []);
 
   const tiers: TierOption[] = [
     {
@@ -48,7 +38,7 @@ export function AISummarizerStep() {
     setSaving(true);
 
     try {
-      await fetch('http://localhost:5167/api/settings/summarization-tier', {
+      await fetch(`${API_BASE_URL}/api/settings/summarization-tier`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ tier: tierId }),
@@ -95,6 +85,13 @@ export function AISummarizerStep() {
 
               {/* Description */}
               <p className="text-xs text-[hsl(var(--text-muted))] leading-relaxed">{tier.description}</p>
+
+              {/* BYO note */}
+              {tier.id === 'byo' && (
+                <p className="text-[10px] text-[hsl(var(--text-muted))] italic">
+                  You'll configure your API key in Settings after setup
+                </p>
+              )}
             </button>
           ))}
         </div>
@@ -109,7 +106,7 @@ export function AISummarizerStep() {
           onClick={handleSkip}
           className="text-sm text-[hsl(var(--text-muted))] hover:text-[hsl(var(--text-secondary))] transition-colors"
         >
-          Skip — I'll configure later
+          Skip — use free Local AI for now
         </button>
       </div>
     </OnboardingContainer>

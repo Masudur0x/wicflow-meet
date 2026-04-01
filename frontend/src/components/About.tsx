@@ -137,10 +137,20 @@ export function About() {
             </div>
 
             {/* Footer - Compact */}
-            <div className="pt-2 border-t border-gray-200 text-center">
+            <div className="pt-2 border-t border-gray-200 text-center space-y-1">
                 <p className="text-xs text-gray-400">
                     Built by Wicflow
                 </p>
+                <button
+                    onClick={async () => {
+                        try {
+                            await invoke('open_external_url', { url: 'https://github.com/Masudur0x/wicflow-meet/issues' });
+                        } catch { /* ignore */ }
+                    }}
+                    className="text-xs text-gray-400 hover:text-gray-600 hover:underline transition-colors"
+                >
+                    Report an issue on GitHub
+                </button>
             </div>
             {/* Update Dialog */}
             <UpdateDialog

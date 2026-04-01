@@ -70,7 +70,7 @@ export function WelcomeStep() {
           >
             Get Started
           </Button>
-          <p className="text-xs text-center text-[hsl(var(--text-muted))]">Takes less than 3 minutes</p>
+          <p className="text-xs text-center text-[hsl(var(--text-muted))]">Setup takes just a few taps</p>
         </div>
       </div>
     </OnboardingContainer>

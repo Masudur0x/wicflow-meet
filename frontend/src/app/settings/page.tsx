@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
-import { ArrowLeft, Settings2, Mic, Database as DatabaseIcon, SparkleIcon, FlaskConical } from 'lucide-react';
+import { ArrowLeft, Settings2, Mic, Database as DatabaseIcon, SparkleIcon, FlaskConical, Link2, Info } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { invoke } from '@tauri-apps/api/core';
 import { motion } from 'framer-motion';
@@ -12,14 +12,18 @@ import { SummaryModelSettings } from '@/components/SummaryModelSettings';
 import { BetaSettings } from '@/components/BetaSettings';
 import { useConfig } from '@/contexts/ConfigContext';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { IntegrationsTab } from '@/components/settings/IntegrationsTab';
+import { About } from '@/components/About';
 
 // Tabs configuration (constant)
 const TABS = [
   { value: 'general', label: 'General', icon: Settings2 },
   { value: 'recording', label: 'Recordings', icon: Mic },
-  { value: 'Transcriptionmodels', label: 'Transcription', icon: DatabaseIcon },
+  { value: 'transcriptionModels', label: 'Transcription', icon: DatabaseIcon },
   { value: 'summaryModels', label: 'Summary', icon: SparkleIcon },
-  { value: 'beta', label: 'Beta', icon: FlaskConical }
+  { value: 'integrations', label: 'Integrations', icon: Link2 },
+  { value: 'beta', label: 'Beta', icon: FlaskConical },
+  { value: 'about', label: 'About', icon: Info },
 ] as const;
 
 export default function SettingsPage() {
@@ -115,7 +119,7 @@ export default function SettingsPage() {
             <TabsContent value="recording">
               <RecordingSettings />
             </TabsContent>
-            <TabsContent value="Transcriptionmodels">
+            <TabsContent value="transcriptionModels">
               <TranscriptSettings
                 transcriptModelConfig={transcriptModelConfig}
                 setTranscriptModelConfig={setTranscriptModelConfig}
@@ -124,8 +128,14 @@ export default function SettingsPage() {
             <TabsContent value="summaryModels">
               <SummaryModelSettings />
             </TabsContent>
+            <TabsContent value="integrations">
+              <IntegrationsTab />
+            </TabsContent>
             <TabsContent value="beta" className="mt-6">
               <BetaSettings />
+            </TabsContent>
+            <TabsContent value="about">
+              <About />
             </TabsContent>
           </Tabs>
         </div>

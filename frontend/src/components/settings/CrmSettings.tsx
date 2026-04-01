@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { toast } from 'sonner'
+import { API_BASE_URL } from '@/lib/api'
 
 interface CrmConnection {
   provider: string
@@ -28,7 +29,7 @@ export function CrmSettings() {
   const [atTableName, setAtTableName] = useState('')
 
   useEffect(() => {
-    fetch('http://localhost:5167/api/settings/crm')
+    fetch(`${API_BASE_URL}/api/settings/crm`)
       .then(res => res.json())
       .then(data => {
         const conns: CrmConnection[] = data.connections || []
@@ -47,7 +48,7 @@ export function CrmSettings() {
   const saveProvider = async (provider: string, body: Record<string, string>) => {
     setSaving(true)
     try {
-      const res = await fetch('http://localhost:5167/api/settings/crm', {
+      const res = await fetch(`${API_BASE_URL}/api/settings/crm`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ provider, ...body }),
@@ -55,7 +56,7 @@ export function CrmSettings() {
       if (!res.ok) throw new Error('Failed to save')
       toast.success(`${provider === 'google_sheets' ? 'Google Sheets' : provider === 'hubspot' ? 'HubSpot' : 'Airtable'} settings saved!`)
       // Refresh connections
-      const refresh = await fetch('http://localhost:5167/api/settings/crm')
+      const refresh = await fetch(`${API_BASE_URL}/api/settings/crm`)
       const data = await refresh.json()
       setConnections(data.connections || [])
     } catch {
@@ -90,6 +91,9 @@ export function CrmSettings() {
             {isConnected('google_sheets') ? 'Connected' : 'Not connected'}
           </span>
         </div>
+        <p className="text-xs text-[hsl(var(--text-muted))]">
+          Automatically log meeting summaries to a Google Sheet. You'll need a Google API key and a spreadsheet URL.
+        </p>
         <div>
           <label className={labelClass}>API Key</label>
           <input
@@ -99,6 +103,12 @@ export function CrmSettings() {
             placeholder="Google API key"
             className={inputClass}
           />
+          <p className="text-xs text-[hsl(var(--text-muted))] mt-1">
+            Get yours at{' '}
+            <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener noreferrer" className="text-[hsl(var(--primary))] hover:underline">
+              Google Cloud Console → Credentials
+            </a>
+          </p>
         </div>
         <div>
           <label className={labelClass}>Spreadsheet URL</label>
@@ -109,6 +119,9 @@ export function CrmSettings() {
             placeholder="https://docs.google.com/spreadsheets/d/..."
             className={inputClass}
           />
+          <p className="text-xs text-[hsl(var(--text-muted))] mt-1">
+            Open your spreadsheet and copy the URL from the browser address bar.
+          </p>
         </div>
         <button
           onClick={() => saveProvider('google_sheets', { api_key: gsApiKey, spreadsheet_url: gsUrl })}
@@ -127,6 +140,9 @@ export function CrmSettings() {
             {isConnected('hubspot') ? 'Connected' : 'Not connected'}
           </span>
         </div>
+        <p className="text-xs text-[hsl(var(--text-muted))]">
+          Send meeting summaries to HubSpot as notes or activities.
+        </p>
         <div>
           <label className={labelClass}>Private App Token</label>
           <input
@@ -136,6 +152,12 @@ export function CrmSettings() {
             placeholder="pat-na1-xxxx..."
             className={inputClass}
           />
+          <p className="text-xs text-[hsl(var(--text-muted))] mt-1">
+            Create a Private App at{' '}
+            <a href="https://app.hubspot.com/private-apps/" target="_blank" rel="noopener noreferrer" className="text-[hsl(var(--primary))] hover:underline">
+              HubSpot → Settings → Integrations → Private Apps
+            </a>
+          </p>
         </div>
         <button
           onClick={() => saveProvider('hubspot', { api_key: hsApiKey })}
@@ -154,6 +176,9 @@ export function CrmSettings() {
             {isConnected('airtable') ? 'Connected' : 'Not connected'}
           </span>
         </div>
+        <p className="text-xs text-[hsl(var(--text-muted))]">
+          Log meeting summaries to an Airtable base.
+        </p>
         <div>
           <label className={labelClass}>Personal Access Token</label>
           <input
@@ -163,6 +188,12 @@ export function CrmSettings() {
             placeholder="pat.xxxx..."
             className={inputClass}
           />
+          <p className="text-xs text-[hsl(var(--text-muted))] mt-1">
+            Create one at{' '}
+            <a href="https://airtable.com/create/tokens" target="_blank" rel="noopener noreferrer" className="text-[hsl(var(--primary))] hover:underline">
+              airtable.com/create/tokens
+            </a>
+          </p>
         </div>
         <div>
           <label className={labelClass}>Base ID</label>
@@ -173,6 +204,9 @@ export function CrmSettings() {
             placeholder="appXXXXXXXXXX"
             className={inputClass}
           />
+          <p className="text-xs text-[hsl(var(--text-muted))] mt-1">
+            Find this in your Airtable base URL: airtable.com/<strong>appXXXXXXXXXX</strong>/...
+          </p>
         </div>
         <div>
           <label className={labelClass}>Table Name</label>
@@ -183,6 +217,9 @@ export function CrmSettings() {
             placeholder="Meetings"
             className={inputClass}
           />
+          <p className="text-xs text-[hsl(var(--text-muted))] mt-1">
+            The name of the table where summaries will be added. It will be created if it doesn't exist.
+          </p>
         </div>
         <button
           onClick={() => saveProvider('airtable', { api_key: atApiKey, base_id: atBaseId, table_name: atTableName })}
