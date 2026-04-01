@@ -47,7 +47,7 @@ export function SummarizationTierSettings() {
         >
           <div className="text-sm font-medium text-[hsl(var(--text-primary))]">Local AI (Free)</div>
           <div className="text-xs text-[hsl(var(--text-secondary))] mt-1">Runs entirely on your computer</div>
-          <div className="text-xs text-[hsl(var(--text-muted))] mt-2">No internet or account needed. Good for everyday meetings and English transcription. Best for privacy and simplicity.</div>
+          <div className="text-xs text-[hsl(var(--text-muted))] mt-2">Runs on your computer. No internet needed. Great for everyday meetings.</div>
         </button>
 
         <button
@@ -60,7 +60,7 @@ export function SummarizationTierSettings() {
         >
           <div className="text-sm font-medium text-[hsl(var(--text-primary))]">Use Your Own API Key</div>
           <div className="text-xs text-[hsl(var(--text-secondary))] mt-1">Connect ChatGPT or Claude</div>
-          <div className="text-xs text-[hsl(var(--text-muted))] mt-2">Higher quality summaries. Best for important meetings, multilingual support, or detailed and accurate notes.</div>
+          <div className="text-xs text-[hsl(var(--text-muted))] mt-2">Connect your ChatGPT or Claude account for higher quality summaries.</div>
         </button>
       </div>
 

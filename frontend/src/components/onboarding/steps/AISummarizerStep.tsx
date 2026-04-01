@@ -32,13 +32,13 @@ export function AISummarizerStep() {
     {
       id: 'free',
       title: 'Local AI (Free)',
-      description: 'Runs entirely on your computer. No internet or account needed. Good for everyday meetings and English transcription. Best for users who want privacy and simplicity.',
+      description: 'Runs on your computer. No internet needed. Great for everyday meetings.',
       icon: <Cpu className="w-6 h-6" />,
     },
     {
       id: 'byo',
       title: 'Use Your Own API Key',
-      description: 'Connect your own ChatGPT or Claude account for higher quality summaries. Best for important meetings, multilingual support, or when you need detailed and accurate notes.',
+      description: 'Connect your ChatGPT or Claude account for higher quality summaries.',
       icon: <Key className="w-6 h-6" />,
     },
   ];
