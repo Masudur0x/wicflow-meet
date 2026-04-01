@@ -12,7 +12,7 @@ interface TierOption {
 }
 
 export function AISummarizerStep() {
-  const { goNext } = useOnboarding();
+  const { goNext, setSelectedTier } = useOnboarding();
   const [isMac, setIsMac] = useState(false);
   const [saving, setSaving] = useState(false);
 
@@ -66,10 +66,12 @@ export function AISummarizerStep() {
     }
 
     setSaving(false);
+    setSelectedTier(tierId);
     goNext();
   };
 
   const handleSkip = () => {
+    setSelectedTier('free');
     goNext();
   };
 
@@ -77,7 +79,7 @@ export function AISummarizerStep() {
     <OnboardingContainer
       title="Choose AI Summarizer"
       description="Select how you'd like your meetings summarized."
-      step={4}
+      step={3}
       totalSteps={isMac ? 6 : 5}
     >
       <div className="flex flex-col items-center space-y-6">

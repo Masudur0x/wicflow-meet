@@ -32,9 +32,9 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
   }, []);
 
   // macOS flow (6 steps):
-  //   1: Welcome, 2: SetupOverview, 3: Download, 4: AI Summarizer, 5: Permissions, 6: Complete
+  //   1: Welcome, 2: SetupOverview, 3: AI Summarizer, 4: Download, 5: Permissions, 6: Complete
   // Non-macOS flow (5 steps):
-  //   1: Welcome, 2: SetupOverview, 3: Download, 4: AI Summarizer, 5: Complete
+  //   1: Welcome, 2: SetupOverview, 3: AI Summarizer, 4: Download, 5: Complete
 
   const renderStep = () => {
     switch (currentStep) {
@@ -43,9 +43,9 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
       case 2:
         return <SetupOverviewStep />;
       case 3:
-        return <DownloadProgressStep />;
-      case 4:
         return <AISummarizerStep />;
+      case 4:
+        return <DownloadProgressStep />;
       case 5:
         return isMac ? <PermissionsStep /> : <CompleteStep />;
       case 6:

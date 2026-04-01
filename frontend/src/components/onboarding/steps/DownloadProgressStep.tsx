@@ -26,12 +26,16 @@ export function DownloadProgressStep() {
     goNext,
     selectedSummaryModel,
     setSelectedSummaryModel,
+    selectedTier,
     parakeetDownloaded,
     setParakeetDownloaded,
     summaryModelDownloaded,
     setSummaryModelDownloaded,
     startBackgroundDownloads,
   } = useOnboarding();
+
+  // Only download gemma if user chose "free" tier (local summarization)
+  const needsGemmaDownload = selectedTier === 'free';
 
   const [recommendedModel, setRecommendedModel] = useState<string>('gemma3:1b');
   const [isMac, setIsMac] = useState(false);
@@ -272,16 +276,16 @@ export function DownloadProgressStep() {
   }, [selectedSummaryModel]);
 
   const startDownloads = async () => {
-    // Always download both Parakeet and Gemma (system-recommended)
-    if (!parakeetDownloaded || !summaryModelDownloaded) {
+    // Download Parakeet always; only download Gemma if user chose "free" tier
+    if (!parakeetDownloaded || (needsGemmaDownload && !summaryModelDownloaded)) {
       try {
         if (!parakeetDownloaded) {
           setParakeetState((prev) => ({ ...prev, status: 'downloading' }));
         }
-        if (!summaryModelDownloaded) {
+        if (needsGemmaDownload && !summaryModelDownloaded) {
           setGemmaState((prev) => ({ ...prev, status: 'downloading' }));
         }
-        await startBackgroundDownloads(true);  // Always download both
+        await startBackgroundDownloads(needsGemmaDownload);
       } catch (error) {
         console.error('Failed to start downloads:', error);
         if (!parakeetDownloaded) {
@@ -317,7 +321,7 @@ export function DownloadProgressStep() {
 
     // Check if downloads are complete for toast notification
     const downloadsComplete = parakeetState.status === 'completed' &&
-      gemmaState.status === 'completed';
+      (!needsGemmaDownload || gemmaState.status === 'completed');
 
     // Show toast if downloads still in progress
     if (!downloadsComplete) {
@@ -327,7 +331,7 @@ export function DownloadProgressStep() {
       });
     }
 
-    // Go to AI Summarizer step (step 4)
+    // Go to Permissions (macOS) or Complete step
     goNext();
   };
 
@@ -418,7 +422,7 @@ export function DownloadProgressStep() {
     <OnboardingContainer
       title="Getting things ready"
       description="This runs on your computer — your audio never leaves your machine."
-      step={3}
+      step={4}
       totalSteps={isMac ? 6 : 5}
     >
       <div className="flex flex-col items-center space-y-6">
@@ -431,7 +435,7 @@ export function DownloadProgressStep() {
             '~670 MB'
           )}
 
-          {renderDownloadCard(
+          {needsGemmaDownload && renderDownloadCard(
             'Summary Engine',
             <Sparkles className="w-5 h-5 text-[hsl(var(--accent-light))]" />,
             gemmaState,
@@ -441,7 +445,7 @@ export function DownloadProgressStep() {
 
         {/* Info Message - Only show when Parakeet is downloaded */}
         <AnimatePresence>
-          {parakeetDownloaded && !summaryModelDownloaded && (
+          {parakeetDownloaded && needsGemmaDownload && !summaryModelDownloaded && (
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}

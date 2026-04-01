@@ -41,6 +41,7 @@ interface OnboardingContextType {
   summaryModelProgress: number;
   summaryModelProgressInfo: SummaryModelProgressInfo;
   selectedSummaryModel: string;
+  selectedTier: string | null;
   databaseExists: boolean;
   isBackgroundDownloading: boolean;
   // Permissions
@@ -54,6 +55,7 @@ interface OnboardingContextType {
   setParakeetDownloaded: (value: boolean) => void;
   setSummaryModelDownloaded: (value: boolean) => void;
   setSelectedSummaryModel: (value: string) => void;
+  setSelectedTier: (value: string) => void;
   setDatabaseExists: (value: boolean) => void;
   setPermissionStatus: (permission: keyof OnboardingPermissions, status: PermissionStatus) => void;
   setPermissionsSkipped: (skipped: boolean) => void;
@@ -84,6 +86,7 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
     speedMbps: 0,
   });
   const [selectedSummaryModel, setSelectedSummaryModel] = useState<string>('gemma3:1b');
+  const [selectedTier, setSelectedTier] = useState<string | null>(null);
   const [databaseExists, setDatabaseExists] = useState(false);
   const [isBackgroundDownloading, setIsBackgroundDownloading] = useState(false);
 
@@ -515,6 +518,7 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
         summaryModelProgress,
         summaryModelProgressInfo,
         selectedSummaryModel,
+        selectedTier,
         databaseExists,
         isBackgroundDownloading,
         permissions,
@@ -525,6 +529,7 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
         setParakeetDownloaded,
         setSummaryModelDownloaded,
         setSelectedSummaryModel,
+        setSelectedTier,
         setDatabaseExists,
         setPermissionStatus,
         setPermissionsSkipped,
