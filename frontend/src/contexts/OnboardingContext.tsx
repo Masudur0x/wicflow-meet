@@ -42,6 +42,7 @@ interface OnboardingContextType {
   summaryModelProgressInfo: SummaryModelProgressInfo;
   selectedSummaryModel: string;
   selectedTier: string | null;
+  selectedLanguage: 'english' | 'multilingual' | null;
   databaseExists: boolean;
   isBackgroundDownloading: boolean;
   // Permissions
@@ -56,6 +57,7 @@ interface OnboardingContextType {
   setSummaryModelDownloaded: (value: boolean) => void;
   setSelectedSummaryModel: (value: string) => void;
   setSelectedTier: (value: string) => void;
+  setSelectedLanguage: (value: 'english' | 'multilingual') => void;
   setDatabaseExists: (value: boolean) => void;
   setPermissionStatus: (permission: keyof OnboardingPermissions, status: PermissionStatus) => void;
   setPermissionsSkipped: (skipped: boolean) => void;
@@ -87,6 +89,7 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
   });
   const [selectedSummaryModel, setSelectedSummaryModel] = useState<string>('gemma3:1b');
   const [selectedTier, setSelectedTier] = useState<string | null>(null);
+  const [selectedLanguage, setSelectedLanguage] = useState<'english' | 'multilingual' | null>(null);
   const [databaseExists, setDatabaseExists] = useState(false);
   const [isBackgroundDownloading, setIsBackgroundDownloading] = useState(false);
 
@@ -355,9 +358,9 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
     let currentStep = savedStatus.current_step;
     let completed = savedStatus.completed;
 
-    // Clamp step to new max (6)
-    if (currentStep > 6) {
-      currentStep = 3; // Go to download progress step
+    // Clamp step to new max (7)
+    if (currentStep > 7) {
+      currentStep = 3; // Go to language step
     }
 
     // Trust the completed status - don't revert based on model downloads
@@ -424,26 +427,34 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
     }
   };
 
-  // Start background downloads for models (parallel - Parakeet first, then Gemma immediately)
+  // Start background downloads for models
+  // Downloads transcription engine (Parakeet or Whisper based on language choice) + optional Gemma for summarization
   const startBackgroundDownloads = async (includeGemma: boolean) => {
-    console.log('[OnboardingContext] Starting background downloads, includeGemma:', includeGemma);
+    const useWhisper = selectedLanguage === 'multilingual';
+    console.log('[OnboardingContext] Starting background downloads, includeGemma:', includeGemma, 'useWhisper:', useWhisper);
     setIsBackgroundDownloading(true);
 
     try {
-      // Start Parakeet download first (speech recognition - always required)
-      if (!parakeetDownloaded) {
-        console.log('[OnboardingContext] Starting Parakeet download');
+      // Start transcription engine download
+      if (useWhisper) {
+        // Download Whisper small model for multilingual support
+        console.log('[OnboardingContext] Starting Whisper download (multilingual)');
+        invoke('whisper_download_model', { modelName: 'small' })
+          .catch(err => console.error('[OnboardingContext] Whisper download failed:', err));
+      } else if (!parakeetDownloaded) {
+        // Download Parakeet for English-only
+        console.log('[OnboardingContext] Starting Parakeet download (English)');
         invoke('parakeet_download_model', { modelName: PARAKEET_MODEL })
           .catch(err => console.error('[OnboardingContext] Parakeet download failed:', err));
       }
 
-      // Start Gemma download after a delay to prioritize Parakeet bandwidth
+      // Start Gemma download after a delay to prioritize transcription engine bandwidth
       if (includeGemma && !summaryModelDownloaded) {
         setTimeout(() => {
-          console.log('[OnboardingContext] Starting Gemma download (delayed to prioritize Parakeet)');
+          console.log('[OnboardingContext] Starting Gemma download (delayed to prioritize transcription engine)');
           invoke('builtin_ai_download_model', { modelName: selectedSummaryModel || 'gemma3:1b' })
             .catch(err => console.error('[OnboardingContext] Gemma download failed:', err));
-        }, 3000); // 3 second delay to give Parakeet priority
+        }, 3000);
       }
     } catch (error) {
       console.error('[OnboardingContext] Failed to start background downloads:', error);
@@ -488,14 +499,14 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
   }, []);
 
   const goToStep = useCallback((step: number) => {
-    setCurrentStep(Math.max(1, Math.min(step, 6)));
+    setCurrentStep(Math.max(1, Math.min(step, 7)));
   }, []);
 
   const goNext = useCallback(() => {
     setCurrentStep((prev: number) => {
       const next = prev + 1;
-      // Don't go past step 6
-      return Math.min(next, 6);
+      // Don't go past step 7
+      return Math.min(next, 7);
     });
   }, []);
 
@@ -519,6 +530,7 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
         summaryModelProgressInfo,
         selectedSummaryModel,
         selectedTier,
+        selectedLanguage,
         databaseExists,
         isBackgroundDownloading,
         permissions,
@@ -530,6 +542,7 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
         setSummaryModelDownloaded,
         setSelectedSummaryModel,
         setSelectedTier,
+        setSelectedLanguage,
         setDatabaseExists,
         setPermissionStatus,
         setPermissionsSkipped,

@@ -72,8 +72,8 @@ export function AISummarizerStep() {
     <OnboardingContainer
       title="Choose AI Summarizer"
       description="Select how you'd like your meetings summarized."
-      step={3}
-      totalSteps={isMac ? 6 : 5}
+      step={4}
+      totalSteps={isMac ? 7 : 6}
     >
       <div className="flex flex-col items-center space-y-6">
         {/* Tier Cards */}

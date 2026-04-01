@@ -3,8 +3,9 @@ import { useOnboarding } from '@/contexts/OnboardingContext';
 import {
   WelcomeStep,
   SetupOverviewStep,
-  DownloadProgressStep,
+  LanguageStep,
   AISummarizerStep,
+  DownloadProgressStep,
   PermissionsStep,
   CompleteStep,
 } from './steps';
@@ -31,10 +32,10 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
     checkPlatform();
   }, []);
 
-  // macOS flow (6 steps):
-  //   1: Welcome, 2: SetupOverview, 3: AI Summarizer, 4: Download, 5: Permissions, 6: Complete
-  // Non-macOS flow (5 steps):
-  //   1: Welcome, 2: SetupOverview, 3: AI Summarizer, 4: Download, 5: Complete
+  // macOS flow (7 steps):
+  //   1: Welcome, 2: SetupOverview, 3: Language, 4: AI Summarizer, 5: Download, 6: Permissions, 7: Complete
+  // Non-macOS flow (6 steps):
+  //   1: Welcome, 2: SetupOverview, 3: Language, 4: AI Summarizer, 5: Download, 6: Complete
 
   const renderStep = () => {
     switch (currentStep) {
@@ -43,12 +44,14 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
       case 2:
         return <SetupOverviewStep />;
       case 3:
-        return <AISummarizerStep />;
+        return <LanguageStep />;
       case 4:
-        return <DownloadProgressStep />;
+        return <AISummarizerStep />;
       case 5:
-        return isMac ? <PermissionsStep /> : <CompleteStep />;
+        return <DownloadProgressStep />;
       case 6:
+        return isMac ? <PermissionsStep /> : <CompleteStep />;
+      case 7:
         return isMac ? <CompleteStep /> : null;
       default:
         return null;

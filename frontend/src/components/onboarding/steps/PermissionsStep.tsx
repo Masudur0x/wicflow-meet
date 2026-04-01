@@ -111,8 +111,8 @@ export function PermissionsStep() {
     <OnboardingContainer
       title="Grant Permissions"
       description="Wicflow Meet needs access to your microphone and system audio to record meetings"
-      step={5}
-      totalSteps={6}
+      step={6}
+      totalSteps={7}
       showNavigation={allPermissionsGranted}
       canGoNext={allPermissionsGranted}
     >

@@ -1,37 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { invoke } from '@tauri-apps/api/core';
-import { Download, Info } from 'lucide-react';
+import { Download, Mic, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { OnboardingContainer } from '../OnboardingContainer';
 import { useOnboarding } from '@/contexts/OnboardingContext';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 
 export function SetupOverviewStep() {
   const { goNext } = useOnboarding();
-  const [recommendedModel, setRecommendedModel] = useState<string>('gemma3:1b');
-  const [modelSize, setModelSize] = useState<string>('~806 MB');
   const [isMac, setIsMac] = useState(false);
 
-  // Fetch recommended model on mount
   useEffect(() => {
-    const fetchRecommendedModel = async () => {
-      try {
-        const model = await invoke<string>('builtin_ai_get_recommended_model');
-        setRecommendedModel(model);
-        setModelSize(model === 'gemma3:4b' ? '~2.5 GB' : '~806 MB');
-      } catch (error) {
-        console.error('Failed to get recommended model:', error);
-        // Keep default gemma3:1b
-      }
-    };
-    fetchRecommendedModel();
-
-    // Detect platform for totalSteps
     const checkPlatform = async () => {
       try {
         const { platform } = await import('@tauri-apps/plugin-os');
@@ -43,19 +20,6 @@ export function SetupOverviewStep() {
     checkPlatform();
   }, []);
 
-  const steps = [
-    {
-      number: 1,
-      type: 'transcription',
-      title: 'Download Transcription Engine',
-    },
-    {
-      number: 2,
-      type: 'summarization',
-      title: 'Download Summarization Engine',
-    },
-  ];
-
   const handleContinue = () => {
     goNext();
   };
@@ -63,47 +27,30 @@ export function SetupOverviewStep() {
   return (
     <OnboardingContainer
       title="Setup Overview"
-      description="Wicflow Meet requires that you download the Transcription & Summarization AI models for the software to work."
+      description="We'll download the AI models needed to transcribe and summarize your meetings — everything runs on your computer."
       step={2}
-      totalSteps={isMac ? 6 : 5}
+      totalSteps={isMac ? 7 : 6}
     >
       <div className="flex flex-col items-center space-y-10">
-        {/* Steps Card */}
-        <div className="w-full max-w-md bg-[hsl(var(--card))] rounded-lg border border-[hsl(var(--border))] p-4">
+        {/* What we'll set up */}
+        <div className="w-full max-w-md bg-[hsl(var(--card))] rounded-lg border border-[hsl(var(--border))] p-5">
           <div className="space-y-4">
-            {steps.map((step, idx) => {
-              return (
-                <div
-                  key={step.number}
-                  className={`flex items-start gap-4 p-1`}
-                >
-                  <div className="flex-1 ml-1">
-                    <h3 className="font-medium text-[hsl(var(--text-primary))] flex items-center gap-2">
-                        Step {step.number} :  {step.title}
-
-                        {step.type === "summarization" && (
-                            <TooltipProvider>
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                <button className="text-[hsl(var(--text-muted))] hover:text-[hsl(var(--text-secondary))]">
-                                    <Info className="w-4 h-4" />
-                                </button>
-                                </TooltipTrigger>
-                                <TooltipContent className="max-w-xs text-sm">
-                                You can also select external AI providers like OpenAI, Claude, or
-                                Ollama for summary generation in settings.
-                                </TooltipContent>
-                            </Tooltip>
-                            </TooltipProvider>
-                        )}
-                        </h3>
-                  </div>
-                </div>
-              );
-            })}
+            <div className="flex items-center gap-3">
+              <Sparkles className="w-5 h-5 text-[hsl(var(--primary))] shrink-0" />
+              <div>
+                <h3 className="font-medium text-[hsl(var(--text-primary))]">Choose your AI summarizer</h3>
+                <p className="text-xs text-[hsl(var(--text-secondary))] mt-0.5">Free local AI or your own API key</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <Download className="w-5 h-5 text-[hsl(var(--primary))] shrink-0" />
+              <div>
+                <h3 className="font-medium text-[hsl(var(--text-primary))]">Download AI models</h3>
+                <p className="text-xs text-[hsl(var(--text-secondary))] mt-0.5">We'll only download what you need</p>
+              </div>
+            </div>
           </div>
         </div>
-
 
         {/* CTA Section */}
         <div className="w-full max-w-xs space-y-4">

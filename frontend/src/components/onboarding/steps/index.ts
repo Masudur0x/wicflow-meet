@@ -1,6 +1,7 @@
 export { WelcomeStep } from './WelcomeStep';
-export { PermissionsStep } from './PermissionsStep';
-export { DownloadProgressStep } from './DownloadProgressStep';
 export { SetupOverviewStep } from './SetupOverviewStep';
+export { LanguageStep } from './LanguageStep';
 export { AISummarizerStep } from './AISummarizerStep';
+export { DownloadProgressStep } from './DownloadProgressStep';
+export { PermissionsStep } from './PermissionsStep';
 export { CompleteStep } from './CompleteStep';
