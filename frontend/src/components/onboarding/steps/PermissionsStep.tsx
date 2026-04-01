@@ -135,7 +135,7 @@ export function PermissionsStep() {
           <PermissionRow
             icon={<Volume2 className="w-5 h-5" />}
             title="Meeting Audio"
-            description="Required to capture other participants' voices during meetings"
+            description="Required to capture other participants' voices during meetings. macOS may label this as &quot;Screen Recording&quot; — we only use it for audio, never your screen."
             status={permissions.systemAudio}
             isPending={isAudioPending}
             onAction={handleSystemAudioAction}
@@ -156,12 +156,12 @@ export function PermissionsStep() {
             onClick={handleSkip}
             className="text-sm text-[hsl(var(--text-muted))] hover:text-[hsl(var(--text-secondary))] transition-colors"
           >
-            I'll do this later
+            Continue without permissions
           </button>
 
           {!allPermissionsGranted && (
             <p className="text-xs text-center text-[hsl(var(--text-muted))]">
-              Recording won't work without permissions. You can grant them later in settings.
+              You can grant permissions later in Settings, but recording will be limited until then.
             </p>
           )}
         </div>

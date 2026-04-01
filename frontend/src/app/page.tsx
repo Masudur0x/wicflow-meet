@@ -202,7 +202,7 @@ export default function Home() {
       {!isBackendChecking && !isBackendConnected && (
         <div className="bg-red-600 text-white text-center text-sm py-2 px-4 flex items-center justify-center gap-2 shrink-0">
           <span className="inline-block w-2 h-2 rounded-full bg-red-300 animate-pulse" />
-          Backend is unreachable — summaries and meeting storage won't work until it's running.
+          Meeting storage is unavailable — meeting notes and saved recordings won't work until the Wicflow Meet service is running. Try restarting the app.
         </div>
       )}
 
