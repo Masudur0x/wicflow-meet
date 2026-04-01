@@ -108,7 +108,7 @@ jobs:
       platform: ${{ matrix.platform }}
       target: ${{ matrix.target }}
       build-args: ${{ matrix.args }}
-      sign-binaries: true
+      sign-binaries: false  # Disabled until Apple/Windows certificates are configured
       asset-prefix: "meetily"
       upload-artifacts: false  # tauri-action uploads directly to release
       release-id: ${{ needs.create-release.outputs.release-id }}
